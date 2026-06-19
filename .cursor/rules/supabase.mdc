@@ -1,0 +1,13 @@
+---
+alwaysApply: true
+---
+
+# Regra de segurança do FisioHub
+
+O FisioHub não usa mais Supabase como banco principal. O backend atual usa Neon/PostgreSQL por meio das variáveis `DATABASE_URL` e, quando aplicável, `DATABASE_URL_UNPOOLED`.
+
+Nunca adicionar tokens, chaves, senhas, URLs reais de banco ou arquivos locais sensíveis em arquivos versionados.
+
+Arquivos locais como `.env`, `.env.local`, `.env.production`, `.env.vercel` e `.cursor/mcp.json` devem permanecer fora do Git.
+
+Para configurar MCP localmente, copie `.cursor/mcp.example.json` para `.cursor/mcp.json` somente no seu computador e preencha usando variáveis locais, sem commitar o arquivo real.
