@@ -10,7 +10,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { EnhancedCard } from '@/components/ui/enhanced-card'
 import { GlobalSearch, useGlobalSearch } from '@/components/ui/global-search'
 import { KeyboardShortcuts, useKeyboardShortcuts } from '@/components/ui/keyboard-shortcuts'
-import { AIAssistant } from '@/components/ui/ai-assistant'
 import { AIAssistant as NewAIAssistant, AIAssistantToggle } from '@/components/AIAssistant'
 import { ThemeCustomizer } from '@/components/ui/theme-customizer'
 import { PerformanceMonitor } from '@/components/ui/performance-monitor'
@@ -141,7 +140,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="flex items-center gap-1 sm:gap-2">
                 <Button
                   size="sm"
-                  onClick={() => router.push('/patients')}
+                  onClick={() => router.push('/patient-profile')}
                   className="hidden whitespace-nowrap xl:inline-flex"
                 >
                   <Stethoscope className="mr-2 h-4 w-4" />
@@ -244,7 +243,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
             <Button
               size="sm"
-              onClick={() => router.push('/patients')}
+              onClick={() => router.push('/patient-profile')}
               className="mt-2 w-full xl:hidden"
             >
               <Stethoscope className="mr-2 h-4 w-4" />
@@ -274,7 +273,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Existing overlays */}
       <GlobalSearch isOpen={searchOpen} onClose={closeSearch} />
       <KeyboardShortcuts isOpen={shortcutsOpen} onClose={closeShortcuts} />
-      <AIAssistant />
       <ThemeCustomizer />
       <PerformanceMonitor />
     </div>

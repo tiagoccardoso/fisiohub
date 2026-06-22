@@ -41,7 +41,6 @@ import {
   Eye,
   ArrowRight,
   Target,
-  Stethoscope,
   FileText,
   Shield,
   MessageSquare,
@@ -290,13 +289,6 @@ export default function Dashboard() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-              <Button asChild size="sm">
-                <Link href="/patients">
-                  <Stethoscope className="mr-2 h-4 w-4" />
-                  Perfil do Paciente
-                </Link>
-              </Button>
-
               {/* Advanced Dashboard Toggle */}
               <Button
                 onClick={() => setShowAdvancedDashboard(!showAdvancedDashboard)}
