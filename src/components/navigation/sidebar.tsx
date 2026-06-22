@@ -24,8 +24,16 @@ import {
   HardDrive,
   MessageSquare,
   ClipboardList,
-  LayoutGrid
+  LayoutGrid,
+  type LucideIcon
 } from 'lucide-react'
+
+interface NavigationItem {
+  href: string
+  label: string
+  icon: LucideIcon
+  badge: string | null
+}
 
 const navigationItems = [
   {
@@ -100,7 +108,7 @@ const navigationItems = [
     icon: LayoutGrid,
     badge: null
   }
-]
+] as const satisfies readonly NavigationItem[]
 
 const quickActions = [
   {
