@@ -2,29 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireAuth } from '@/lib/auth-server'
 import { execute, queryOne } from '@/lib/db-neon'
+import { patientFormSchema } from '@/lib/patient'
 
-const optionalEmail = z.preprocess(
-  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
-  z.string().email('E-mail inválido').optional()
-)
-
-const patientUpdateSchema = z.object({
-  full_name: z.string().min(3, 'Nome completo é obrigatório').optional(),
-  birth_date: z.preprocess(
-    (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
-    z.string().optional()
-  ),
-  gender: z.string().optional(),
-  cpf: z.string().optional(),
-  phone: z.string().optional(),
-  email: optionalEmail,
-  address: z.string().optional(),
-  emergency_contact_name: z.string().optional(),
-  emergency_contact_phone: z.string().optional(),
-  initial_medical_history: z.string().optional(),
-  notes: z.string().optional(),
+const patientUpdateSchema = patientFormSchema.partial().extend({
   status: z.enum(['active', 'inactive', 'archived']).optional(),
 })
+
+type PostgresError = Error & { code?: string; constraint?: string }
 
 function getIdFromRequest(request: NextRequest) {
   const url = new URL(request.url)
@@ -58,9 +42,30 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json()
     const validation = patientUpdateSchema.safeParse(body)
-    if (!validation.success) return NextResponse.json({ error: validation.error.format() }, { status: 400 })
+    if (!validation.success) {
+      const firstIssue = validation.error.issues[0]
+      return NextResponse.json(
+        { error: firstIssue?.message || 'Dados do paciente inválidos.', fieldErrors: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      )
+    }
 
     const data = validation.data
+    if (data.cpf) {
+      const existingPatient = await queryOne<{ id: string }>(
+        `select id
+           from public.patients
+          where clinic_id = $1
+            and id <> $2
+            and regexp_replace(cpf, '[^0-9]', '', 'g') = $3
+          limit 1`,
+        [user.clinic_id, id, data.cpf]
+      )
+      if (existingPatient) {
+        return NextResponse.json({ error: 'CPF já cadastrado nesta clínica.' }, { status: 409 })
+      }
+    }
+
     const updatedPatient = await queryOne(
       `update public.patients set
           full_name = coalesce($2, full_name),
@@ -100,6 +105,15 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(updatedPatient)
   } catch (error) {
     const unauthorized = error instanceof Error && error.message === 'Não autorizado'
+    const databaseError = error as PostgresError
+    const duplicateCpf = databaseError.code === '23505' && (
+      databaseError.constraint === 'patients_clinic_cpf_unique' ||
+      databaseError.constraint === 'patients_cpf_key'
+    )
+    if (duplicateCpf) {
+      return NextResponse.json({ error: 'CPF já cadastrado nesta clínica.' }, { status: 409 })
+    }
+
     return NextResponse.json(
       { error: unauthorized ? 'Não autorizado' : 'Erro ao atualizar paciente.' },
       { status: unauthorized ? 401 : 500 }

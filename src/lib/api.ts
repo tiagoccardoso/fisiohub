@@ -1,22 +1,22 @@
-import { type PatientFormValues } from '@/app/patients/new/page';
-// import * as Sentry from '@sentry/nextjs';
+import { type CreatedPatient, type PatientFormValues } from '@/lib/patient'
+// import * as Sentry from '@sentry/nextjs'
 
-export const createPatient = async (patientData: PatientFormValues) => {
+export const createPatient = async (patientData: PatientFormValues): Promise<CreatedPatient> => {
   const response = await fetch('/api/patients', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(patientData),
-  });
+  })
 
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Falha ao criar o paciente.');
+    const errorData = await response.json()
+    throw new Error(errorData.error || 'Falha ao criar o paciente.')
   }
 
-  return response.json();
-};
+  return response.json()
+}
 
 // Função utilitária para log de erros críticos e alertas de segurança
 export function logCriticalError(context: string, error: any, req?: Request) {
@@ -33,4 +33,4 @@ export function logCriticalError(context: string, error: any, req?: Request) {
   console.error('[CRITICAL]', log)
   // Sentry removido temporariamente
   // Sentry.captureException(error, { extra: log })
-} 
+}

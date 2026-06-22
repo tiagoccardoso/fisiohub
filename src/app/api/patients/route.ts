@@ -1,29 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { z } from 'zod'
 import { requireAuth } from '@/lib/auth-server'
 import { query, queryOne } from '@/lib/db-neon'
+import { patientFormSchema } from '@/lib/patient'
 
-const optionalEmail = z.preprocess(
-  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
-  z.string().email('E-mail inválido').optional()
-)
-
-const patientSchema = z.object({
-  full_name: z.string().min(3, 'Nome completo é obrigatório'),
-  birth_date: z.preprocess(
-    (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
-    z.string().optional()
-  ),
-  gender: z.string().optional(),
-  cpf: z.string().optional(),
-  phone: z.string().optional(),
-  email: optionalEmail,
-  address: z.string().optional(),
-  emergency_contact_name: z.string().optional(),
-  emergency_contact_phone: z.string().optional(),
-  initial_medical_history: z.string().optional(),
-  notes: z.string().optional(),
-})
+type PostgresError = Error & { code?: string; constraint?: string }
 
 export async function GET(request: NextRequest) {
   try {
@@ -66,13 +46,30 @@ export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth()
     const body = await request.json()
-    const validation = patientSchema.safeParse(body)
+    const validation = patientFormSchema.safeParse(body)
 
     if (!validation.success) {
-      return NextResponse.json({ error: validation.error.format() }, { status: 400 })
+      const firstIssue = validation.error.issues[0]
+      return NextResponse.json(
+        { error: firstIssue?.message || 'Dados do paciente inválidos.', fieldErrors: validation.error.flatten().fieldErrors },
+        { status: 400 }
+      )
     }
 
     const data = validation.data
+    const existingPatient = await queryOne<{ id: string }>(
+      `select id
+         from public.patients
+        where clinic_id = $1
+          and regexp_replace(cpf, '[^0-9]', '', 'g') = $2
+        limit 1`,
+      [user.clinic_id, data.cpf]
+    )
+
+    if (existingPatient) {
+      return NextResponse.json({ error: 'CPF já cadastrado nesta clínica.' }, { status: 409 })
+    }
+
     const newPatient = await queryOne(
       `insert into public.patients
         (full_name, birth_date, gender, cpf, phone, email, address,
@@ -85,7 +82,7 @@ export async function POST(request: NextRequest) {
         data.full_name,
         data.birth_date || '',
         data.gender || null,
-        data.cpf || null,
+        data.cpf,
         data.phone || null,
         data.email || null,
         data.address || null,
@@ -101,7 +98,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newPatient, { status: 201 })
   } catch (error) {
     const unauthorized = error instanceof Error && error.message === 'Não autorizado'
-    console.error('[patients/post] error', error)
+    const databaseError = error as PostgresError
+    const duplicateCpf = databaseError.code === '23505' && (
+      databaseError.constraint === 'patients_clinic_cpf_unique' ||
+      databaseError.constraint === 'patients_cpf_key'
+    )
+
+    if (duplicateCpf) {
+      return NextResponse.json({ error: 'CPF já cadastrado nesta clínica.' }, { status: 409 })
+    }
+
     return NextResponse.json(
       { error: unauthorized ? 'Não autorizado' : 'Erro interno do servidor ao criar paciente.' },
       { status: unauthorized ? 401 : 500 }

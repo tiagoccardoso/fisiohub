@@ -2,20 +2,23 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Activity, AlertCircle, CheckCircle, Clock, Save, Search, UserRound } from 'lucide-react'
+import { Activity, AlertCircle, CheckCircle, Clock, Plus, Save, Search, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppPageShell } from '@/components/layouts/app-page-shell'
+import { PatientForm } from '@/components/patients/patient-form'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useDebounce } from '@/hooks/use-debounce'
 import { usePatients } from '@/hooks/use-patients'
 import { PatientProfileRecord } from '@/lib/patient-profile'
+import { CreatedPatient } from '@/lib/patient'
 import { AIEngine, AIRecommendation, PatientProfile } from '@/services/ai'
 
 type PatientOption = {
@@ -90,6 +93,7 @@ function PatientProfilePageContent() {
   const [form, setForm] = useState<ProfileForm>(emptyForm)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [isPatientFormOpen, setIsPatientFormOpen] = useState(false)
   const [recommendation, setRecommendation] = useState<AIRecommendation | null>(null)
   const debouncedSearch = useDebounce(searchTerm, 300)
   const { data: patients = [], isLoading: patientsLoading, error: patientsError } = usePatients(debouncedSearch)
@@ -141,6 +145,15 @@ function PatientProfilePageContent() {
     setForm(emptyForm)
     setSaveError('')
     setRecommendation(null)
+  }
+
+  const handlePatientCreated = (patient: CreatedPatient) => {
+    setSearchTerm('')
+    setPatientId(patient.id)
+    setForm({ ...emptyForm, age: calculateAge(patient.birth_date) })
+    setSaveError('')
+    setRecommendation(null)
+    setIsPatientFormOpen(false)
   }
 
   const handleGenerateRecommendation = () => {
@@ -199,10 +212,16 @@ function PatientProfilePageContent() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserRound className="h-5 w-5 text-primary" />
-            Paciente
-          </CardTitle>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <UserRound className="h-5 w-5 text-primary" />
+              Paciente
+            </CardTitle>
+            <Button type="button" onClick={() => setIsPatientFormOpen(true)} className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" />
+              Cadastrar novo paciente
+            </Button>
+          </div>
           <CardDescription>Selecione um paciente da clínica para visualizar ou atualizar o perfil.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -437,6 +456,18 @@ function PatientProfilePageContent() {
           </Card>
         </div>
       ) : null}
+
+      <Dialog open={isPatientFormOpen} onOpenChange={setIsPatientFormOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Cadastrar novo paciente</DialogTitle>
+            <DialogDescription>
+              Cadastre a identificação do paciente para continuar no Perfil do Paciente. Os campos com * são obrigatórios.
+            </DialogDescription>
+          </DialogHeader>
+          <PatientForm onSuccess={handlePatientCreated} onCancel={() => setIsPatientFormOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
