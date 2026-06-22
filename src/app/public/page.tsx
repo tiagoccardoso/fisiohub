@@ -26,7 +26,7 @@ export default function PublicPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Heart className="h-8 w-8 text-primary" />
-              <h1 className="font-display text-2xl font-bold text-primary">FisioSys</h1>
+              <h1 className="font-display text-2xl font-bold text-primary">FisioHub</h1>
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">
@@ -225,7 +225,7 @@ export default function PublicPage() {
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Heart className="h-6 w-6 text-blue-500" />
-            <span className="font-semibold text-primary">FisioSys</span>
+            <span className="font-semibold text-primary">FisioHub</span>
           </div>
           <p className="text-sm text-muted-foreground">
             Sistema de Gestão Integrado para Clínica de Fisioterapia

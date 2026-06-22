@@ -7,7 +7,7 @@ export function Loading() {
         <div className="animate-pulse">
           <Heart className="h-12 w-12 text-medical-500 mx-auto" />
         </div>
-        <h2 className="font-display text-xl font-semibold text-primary">FisioSys</h2>
+        <h2 className="font-display text-xl font-semibold text-primary">FisioHub</h2>
         <p className="text-muted-foreground">Carregando sistema...</p>
         <div className="mx-auto h-1 w-8 animate-pulse rounded-full bg-primary"></div>
       </div>

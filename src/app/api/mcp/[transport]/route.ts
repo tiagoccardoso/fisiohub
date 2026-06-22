@@ -334,7 +334,7 @@ const tools = {
         return {
           content: [{
             type: 'text',
-            text: `📊 Estatísticas da Clínica FisioSys:\n\n` +
+            text: `📊 Estatísticas da Clínica FisioHub:\n\n` +
                   `👥 Total de Pacientes: ${totalPatients || 0}\n` +
                   `📅 Total de Eventos: ${totalEvents || 0}\n` +
                   `📋 Tarefas Pendentes: ${pendingTasks || 0}\n` +
@@ -355,7 +355,7 @@ const tools = {
 
   system_health_check: {
     name: 'system_health_check',
-    description: 'Verifica o status de saúde do sistema FisioSys',
+    description: 'Verifica o status de saúde do sistema FisioHub',
     inputSchema: { type: 'object', properties: {} },
     handler: async () => {
       try {
@@ -369,7 +369,7 @@ const tools = {
         return {
           content: [{
             type: 'text',
-            text: `✅ Sistema FisioSys - Status: SAUDÁVEL\n\n` +
+            text: `✅ Sistema FisioHub - Status: SAUDÁVEL\n\n` +
                   `🔗 Conexão Neon: OK\n` +
                   `⚡ API MCP: Funcionando\n` +
                   `🌐 Vercel Deploy: Ativo\n` +
@@ -436,7 +436,7 @@ const tools = {
           filters: filters,
           format: format,
           status: "generated",
-          download_url: `https://fisiosys.com/reports/${report_type}_${Date.now()}.${format}`,
+          download_url: `https://fisiohub.com/reports/${report_type}_${Date.now()}.${format}`,
           summary: {
             total_records: Math.floor(Math.random() * 1000) + 100,
             key_insights: [
@@ -462,70 +462,6 @@ const tools = {
           content: [{
             type: "text",
             text: `❌ Erro ao gerar relatório: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
-          }]
-        };
-      }
-    }
-  },
-
-  backup_data: {
-    name: "backup_data",
-    description: "Realiza backup completo ou parcial dos dados da clínica",
-    inputSchema: {
-      type: "object",
-      properties: {
-        backup_type: {
-          type: "string",
-          enum: ["full", "incremental", "patients_only", "appointments_only"],
-          description: "Tipo de backup a ser realizado"
-        },
-        include_files: {
-          type: "boolean",
-          default: true,
-          description: "Incluir arquivos anexos no backup"
-        },
-        encryption: {
-          type: "boolean",
-          default: true,
-          description: "Criptografar o backup"
-        }
-      },
-      required: ["backup_type"]
-    },
-    handler: async (args: any) => {
-      try {
-        const { backup_type, include_files = true, encryption = true } = args;
-
-        // Simulate backup process
-        const backupResult = {
-          backup_id: `backup_${Date.now()}`,
-          type: backup_type,
-          created_at: new Date().toISOString(),
-          size_mb: Math.floor(Math.random() * 500) + 50,
-          encrypted: encryption,
-          includes_files: include_files,
-          status: "completed",
-          storage_location: `s3://manus-backups/backup_${Date.now()}.tar.gz${encryption ? '.enc' : ''}`,
-          retention_days: 90
-        };
-
-        return {
-          content: [{
-            type: "text",
-            text: `💾 Cópia de segurança ${backup_type} realizada com sucesso!\n\n` +
-                  `📦 ID da cópia de segurança: ${backupResult.backup_id}\n` +
-                  `💾 Tamanho: ${backupResult.size_mb} MB\n` +
-                  `🔒 Criptografado: ${encryption ? 'Sim' : 'Não'}\n` +
-                  `📁 Inclui arquivos: ${include_files ? 'Sim' : 'Não'}\n` +
-                  `⏰ Retenção: ${backupResult.retention_days} dias\n` +
-                  `📍 Localização: ${backupResult.storage_location}`
-          }]
-        };
-      } catch (error) {
-        return {
-          content: [{
-            type: "text",
-            text: `❌ Erro ao realizar backup: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
           }]
         };
       }
@@ -818,7 +754,7 @@ export async function POST(
               tools: {}
             },
             serverInfo: {
-              name: 'fisiosys-mcp',
+              name: 'fisiohub-mcp',
               version: '1.0.0'
             }
           },

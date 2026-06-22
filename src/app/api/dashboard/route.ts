@@ -4,7 +4,7 @@ import { query } from '@/lib/db-neon'
 
 export async function GET() {
   try {
-    await requireAuth()
+    const user = await requireAuth()
 
     const [counts, activities, events] = await Promise.all([
       query<{
@@ -17,28 +17,32 @@ export async function GET() {
         active_mentorships: string
       }>(
         `select
-          (select count(*) from public.notebooks)::text as total_notebooks,
-          (select count(*) from public.projects)::text as total_projects,
-          (select count(*) from public.tasks)::text as total_tasks,
-          (select count(*) from public.tasks where status = 'done')::text as completed_tasks,
-          (select count(*) from public.users where is_active = true)::text as total_team_members,
-          (select count(*) from public.users where role = 'intern' and is_active = true)::text as active_interns,
-          (select count(*) from public.mentorships where status = 'active')::text as active_mentorships`
+          (select count(*) from public.notebooks where clinic_id = $1)::text as total_notebooks,
+          (select count(*) from public.projects where clinic_id = $1)::text as total_projects,
+          (select count(*) from public.tasks where clinic_id = $1)::text as total_tasks,
+          (select count(*) from public.tasks where status = 'done' and clinic_id = $1)::text as completed_tasks,
+          (select count(*) from public.users where is_active = true and clinic_id = $1)::text as total_team_members,
+          (select count(*) from public.users where role = 'intern' and is_active = true and clinic_id = $1)::text as active_interns,
+          (select count(*) from public.mentorships where status = 'active' and clinic_id = $1)::text as active_mentorships`,
+        [user.clinic_id]
       ),
       query(
         `select al.id, al.action, al.resource_type, al.user_id, al.created_at::text,
                 json_build_object('full_name', u.full_name, 'avatar_url', u.avatar_url) as user
            from public.activity_logs al
            left join public.users u on u.id = al.user_id
+          where al.clinic_id = $1
           order by al.created_at desc
-          limit 10`
+          limit 10`,
+        [user.clinic_id]
       ),
       query(
         `select id, title, event_type as type, start_time::text as scheduled_for, participants
            from public.calendar_events
-          where start_time >= now()
+          where start_time >= now() and clinic_id = $1
           order by start_time asc
-          limit 5`
+          limit 5`,
+        [user.clinic_id]
       ),
     ])
 

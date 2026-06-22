@@ -23,6 +23,11 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
   const [message, setMessage] = useState<string | null>(null)
   const [isSignUp, setIsSignUp] = useState(initialMode === 'signup')
   const [fullName, setFullName] = useState('')
+  const [clinicName, setClinicName] = useState('')
+  const [clinicDocument, setClinicDocument] = useState('')
+  const [clinicPhone, setClinicPhone] = useState('')
+  const [clinicEmail, setClinicEmail] = useState('')
+  const [clinicAddress, setClinicAddress] = useState('')
 
   const { signIn, signUp, resetPassword, loading, user } = useAuth()
   const router = useRouter()
@@ -72,7 +77,7 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
       return
     }
 
-    if (!fullName.trim()) {
+    if (!fullName.trim() || !clinicName.trim() || !clinicDocument.trim() || !clinicPhone.trim() || !clinicEmail.trim() || !clinicAddress.trim()) {
       setError('Preencha todos os campos obrigatórios.')
       return
     }
@@ -101,6 +106,11 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
       full_name: fullName.trim(),
       role: 'admin', // Primeiro usuário/conta criada com acesso ao sistema
       passwordConfirmation: confirmPassword,
+      clinicName: clinicName.trim(),
+      clinicDocument: clinicDocument.trim(),
+      clinicPhone: clinicPhone.trim(),
+      clinicEmail: clinicEmail.trim().toLowerCase(),
+      clinicAddress: clinicAddress.trim(),
     })
 
     if (error) {
@@ -140,7 +150,7 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
               <Heart className="h-8 w-8 text-primary" aria-hidden="true" />
             </div>
-            <h1 className="font-display text-3xl font-bold text-primary">FisioSys</h1>
+            <h1 className="font-display text-3xl font-bold text-primary">FisioHub</h1>
           </div>
           <div>
             <CardTitle className="text-xl text-foreground sm:text-2xl">
@@ -170,7 +180,9 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
 
           <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
             {isSignUp && (
-              <div className="space-y-2">
+              <div className="space-y-4">
+                <p className="text-sm font-semibold text-primary">Responsavel pela conta</p>
+                <div className="space-y-2">
                 <label htmlFor="full_name" className="text-sm font-semibold">
                   Nome completo
                 </label>
@@ -182,6 +194,17 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
                   onChange={(e) => setFullName(e.target.value)}
                   required={isSignUp}
                 />
+                </div>
+                <div className="border-t pt-4">
+                  <p className="mb-3 text-sm font-semibold text-primary">Dados da clinica</p>
+                  <div className="space-y-3">
+                    <Input aria-label="Nome da clinica" placeholder="Nome da clinica" value={clinicName} onChange={(event) => setClinicName(event.target.value)} required={isSignUp} />
+                    <Input aria-label="CPF ou CNPJ da clinica" placeholder="CPF ou CNPJ" value={clinicDocument} onChange={(event) => setClinicDocument(event.target.value)} required={isSignUp} />
+                    <Input aria-label="Telefone da clinica" placeholder="Telefone da clinica" value={clinicPhone} onChange={(event) => setClinicPhone(event.target.value)} required={isSignUp} />
+                    <Input aria-label="E-mail da clinica" type="email" placeholder="E-mail da clinica" value={clinicEmail} onChange={(event) => setClinicEmail(event.target.value)} required={isSignUp} />
+                    <Input aria-label="Endereco da clinica" placeholder="Endereco completo" value={clinicAddress} onChange={(event) => setClinicAddress(event.target.value)} required={isSignUp} />
+                  </div>
+                </div>
               </div>
             )}
 

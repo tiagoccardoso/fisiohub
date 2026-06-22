@@ -14,6 +14,7 @@ import { AIAssistant } from '@/components/ui/ai-assistant'
 import { AIAssistant as NewAIAssistant, AIAssistantToggle } from '@/components/AIAssistant'
 import { ThemeCustomizer } from '@/components/ui/theme-customizer'
 import { PerformanceMonitor } from '@/components/ui/performance-monitor'
+import { NotificationsPanel } from '@/components/ui/notifications-panel'
 import { useAuth } from '@/hooks/use-auth'
 import {
   Search,
@@ -21,7 +22,8 @@ import {
   User,
   LogOut,
   ChevronDown,
-  Keyboard
+  Keyboard,
+  HelpCircle
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -135,6 +137,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Actions */}
             <div className="flex items-center gap-1 sm:gap-2">
+              <NotificationsPanel className="h-10 w-10" />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.push('/support')}
+                className="text-muted-foreground"
+                title="Central de suporte"
+                aria-label="Abrir central de suporte"
+              >
+                <HelpCircle className="h-5 w-5" />
+              </Button>
               {/* Keyboard Shortcuts */}
               <Button
                 variant="ghost"
@@ -167,7 +180,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     <User className="h-4 w-4 text-white" />
                   </div>
                   <span className="hidden max-w-32 truncate text-sm font-medium sm:block">
-                    {(user as any)?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário'}
+                    {user?.full_name || user?.email?.split('@')[0] || 'Usuário'}
                   </span>
                   <ChevronDown className="hidden h-4 w-4 sm:block" />
                 </Button>
@@ -183,6 +196,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                         <Button
                           variant="ghost"
                           size="sm"
+                          onClick={() => router.push('/settings')}
                           className="w-full justify-start"
                         >
                           <User className="h-4 w-4 mr-2" />

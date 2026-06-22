@@ -17,14 +17,16 @@ const TeamMemberSchema = z.object({
 
 export async function GET() {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const members = await query(
       `select id, full_name, email, role::text as role, crefito, phone, specialty,
               university, semester, is_active, created_at::text, updated_at::text
          from public.users
         where is_active = true
+          and clinic_id = $1
           and role in ('admin', 'mentor', 'intern', 'professional', 'therapist', 'receptionist', 'student')
-        order by full_name`
+        order by full_name`,
+      [user.clinic_id]
     )
     return NextResponse.json(members)
   } catch (error) {
@@ -38,7 +40,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    await requireRole(['admin'])
+    const user = await requireRole(['admin'])
     const body = await request.json()
     const validation = TeamMemberSchema.safeParse({
       ...body,
@@ -51,9 +53,9 @@ export async function POST(request: NextRequest) {
     const data = validation.data
     const member = await queryOne(
       `insert into public.users
-        (full_name, display_name, email, role, phone, crefito, specialty, university, semester, is_active)
+        (full_name, display_name, email, role, phone, crefito, specialty, university, semester, is_active, clinic_id)
        values
-        ($1, $1, $2, $3::public.user_role, $4, $5, $6, $7, $8, $9)
+        ($1, $1, $2, $3::public.user_role, $4, $5, $6, $7, $8, $9, $10)
        returning id, full_name, email, role::text as role, crefito, phone, specialty, university, semester, is_active, created_at::text, updated_at::text`,
       [
         data.full_name,
@@ -65,6 +67,7 @@ export async function POST(request: NextRequest) {
         data.university || null,
         data.semester || null,
         data.is_active,
+        user.clinic_id,
       ]
     )
     return NextResponse.json(member, { status: 201 })

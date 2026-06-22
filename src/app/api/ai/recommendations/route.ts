@@ -255,17 +255,17 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { 
-      patientId, 
-      context, 
-      priority, 
-      includeExercises, 
-      includeLifestyle, 
-      maxRecommendations 
+    const {
+      patientId,
+      context,
+      priority,
+      includeExercises,
+      includeLifestyle,
+      maxRecommendations
     } = RecommendationRequestSchema.parse(body);
 
     const supabase = await createServerAuthClient();
-    
+
     // Fetch comprehensive patient data
     const { data: patientData, error: patientError } = await supabase
       .from('patients')
@@ -332,7 +332,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   return NextResponse.json({
-    message: '🤖 API de Recomendações de IA - FisioSys',
+    message: '🤖 API de Recomendações de IA - FisioHub',
     version: '1.0',
     endpoints: {
       'POST /api/ai/recommendations': 'Gerar recomendação baseada no perfil do paciente'
@@ -346,4 +346,4 @@ export async function GET() {
       'Justificativa baseada em evidências'
     ]
   });
-} 
+}

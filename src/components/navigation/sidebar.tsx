@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/use-auth'
-import { NotificationsPanel } from '@/components/ui/notifications-panel'
 import { cn } from '@/lib/utils'
 import {
   Home,
@@ -13,15 +12,12 @@ import {
   Users,
   Calendar,
   Settings,
-  Bell,
   Search,
   Plus,
   Heart,
   LogOut,
   BarChart3,
-  Monitor,
   Activity,
-  HardDrive,
   MessageSquare,
   ClipboardList,
   LayoutGrid,
@@ -55,12 +51,6 @@ const navigationItems = [
     badge: '12'
   },
   {
-    href: '/patients',
-    label: 'Pacientes',
-    icon: Users,
-    badge: null
-  },
-  {
     href: '/exercises',
     label: 'Exercícios',
     icon: Activity,
@@ -82,18 +72,6 @@ const navigationItems = [
     href: '/analytics',
     label: 'Análises',
     icon: BarChart3,
-    badge: null
-  },
-  {
-    href: '/system-monitor',
-    label: 'Monitor do Sistema',
-    icon: Monitor,
-    badge: null
-  },
-  {
-    href: '/backup',
-    label: 'Cópias de Segurança',
-    icon: HardDrive,
     badge: null
   },
   {
@@ -128,12 +106,12 @@ const quickActions = [
   }
 ]
 
-const mobileNavigationItems = [
-  navigationItems[0],
-  navigationItems[6],
-  navigationItems[3],
-  navigationItems[1],
-  navigationItems[4],
+const mobileNavigationItems: NavigationItem[] = [
+  { href: '/', label: 'Painel', icon: Home, badge: null },
+  { href: '/calendar', label: 'Agenda', icon: Calendar, badge: null },
+  { href: '/notebooks', label: 'Cadernos', icon: BookOpen, badge: null },
+  { href: '/exercises', label: 'Exercicios', icon: Activity, badge: null },
+  { href: '/support', label: 'Suporte', icon: MessageSquare, badge: null },
 ]
 
 export function Sidebar() {
@@ -166,7 +144,7 @@ export function Sidebar() {
           <Heart className="h-8 w-8 text-primary" />
         </div>
         <h1 className="font-display text-xl font-bold text-primary">
-          FisioSys
+          FisioHub
         </h1>
       </div>
 
@@ -246,8 +224,6 @@ export function Sidebar() {
                user?.role === 'intern' ? 'Estagiário' : 'Usuário'}
             </div>
           </div>
-          {/* Painel de Notificações Inteligente */}
-          <NotificationsPanel className="h-8 w-8" />
         </div>
         <div className="space-y-1">
           <Link href="/settings">

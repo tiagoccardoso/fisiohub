@@ -8,7 +8,7 @@ function toJson(value: unknown) {
 
 export async function GET(request: Request) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const { searchParams } = new URL(request.url)
     const patientId = searchParams.get('patientId')
 
@@ -23,9 +23,9 @@ export async function GET(request: Request) {
          from public.physiotherapy_evaluations pe
          left join public.users u on u.id = pe.evaluator_id
          left join public.patients p on p.id = pe.patient_id
-        where pe.patient_id = $1
+        where pe.patient_id = $1 and pe.clinic_id = $2
         order by pe.evaluation_date desc`,
-      [patientId]
+      [patientId, user.clinic_id]
     )
 
     return NextResponse.json({ success: true, data: evaluations })
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
     const patientId = body.patientId
     const mainComplaint = body.mainComplaint
-    const evaluatorId = body.evaluatorId || user.id
+    const evaluatorId = user.id
 
     if (!patientId || !mainComplaint) {
       return NextResponse.json(
@@ -60,13 +60,13 @@ export async function POST(request: Request) {
          pain_location, pain_characteristics, medical_history, previous_treatments,
          medications, lifestyle_factors, posture_analysis, muscle_strength, range_of_motion,
          functional_tests, clinical_diagnosis, physiotherapy_diagnosis, treatment_goals,
-         estimated_sessions, frequency_per_week)
+         estimated_sessions, frequency_per_week, clinic_id)
        values
         ($1, $2, coalesce(nullif($3, '')::date, current_date), $4, $5,
          $6, $7, $8, $9,
          $10, $11, $12, $13::jsonb, $14::jsonb,
          $15::jsonb, $16, $17, $18::text[],
-         $19, $20)
+         $19, $20, $21)
        returning *`,
       [
         patientId,
@@ -89,6 +89,7 @@ export async function POST(request: Request) {
         body.treatmentGoals || [],
         body.estimatedSessions || null,
         body.frequencyPerWeek || null,
+        user.clinic_id,
       ]
     )
 
@@ -105,7 +106,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const body = await request.json()
     const { evaluationId } = body
 
@@ -133,7 +134,7 @@ export async function PUT(request: Request) {
           estimated_sessions = coalesce($17, estimated_sessions),
           frequency_per_week = coalesce($18, frequency_per_week),
           updated_at = now()
-        where id = $1
+        where id = $1 and clinic_id = $19
         returning *`,
       [
         evaluationId,
@@ -154,6 +155,7 @@ export async function PUT(request: Request) {
         body.treatmentGoals ?? null,
         body.estimatedSessions ?? null,
         body.frequencyPerWeek ?? null,
+        user.clinic_id,
       ]
     )
 

@@ -4,35 +4,43 @@ import { query } from '@/lib/db-neon'
 
 export async function GET() {
   try {
-    await requireAuth()
+    const user = await requireAuth()
 
     const [totalPatientsRows, appointmentsThisMonthRows, newPatientsRows, statusRows, teamRows, trendRows] = await Promise.all([
-      query<{ count: string }>('select count(*)::text as count from public.patients where status <> $1', ['archived']),
+      query<{ count: string }>('select count(*)::text as count from public.patients where status <> $1 and clinic_id = $2', ['archived', user.clinic_id]),
       query<{ count: string }>(
         `select count(*)::text as count
            from public.calendar_events
           where event_type = 'appointment'
-            and start_time >= date_trunc('month', now())`
+            and start_time >= date_trunc('month', now())
+            and clinic_id = $1`,
+        [user.clinic_id]
       ),
       query<{ count: string }>(
         `select count(*)::text as count
            from public.patients
           where created_at >= date_trunc('month', now())
-            and status <> 'archived'`
+            and status <> 'archived'
+            and clinic_id = $1`,
+        [user.clinic_id]
       ),
       query<{ status: string; count: string }>(
         `select coalesce(status::text, 'scheduled') as status, count(*)::text as count
-           from public.bookings
+           from public.appointments
+          where clinic_id = $1
           group by coalesce(status::text, 'scheduled')
-          order by count(*) desc`
+          order by count(*) desc`,
+        [user.clinic_id]
       ),
       query<{ full_name: string; role: string }>(
         `select full_name, role::text as role
            from public.users
           where is_active = true
+            and clinic_id = $1
             and role in ('mentor', 'intern', 'professional', 'therapist', 'admin')
           order by full_name
-          limit 10`
+          limit 10`,
+        [user.clinic_id]
       ),
       query<{ month: string; appointments: string; new_patients: string }>(
         `with months as (
@@ -42,13 +50,16 @@ export async function GET() {
                 coalesce((select count(*) from public.calendar_events ce
                            where ce.event_type = 'appointment'
                              and ce.start_time >= month_start
-                             and ce.start_time < month_start + interval '1 month'), 0)::text as appointments,
+                             and ce.start_time < month_start + interval '1 month'
+                             and ce.clinic_id = $1), 0)::text as appointments,
                 coalesce((select count(*) from public.patients p
                            where p.created_at >= month_start
                              and p.created_at < month_start + interval '1 month'
-                             and p.status <> 'archived'), 0)::text as new_patients
+                             and p.status <> 'archived'
+                             and p.clinic_id = $1), 0)::text as new_patients
            from months
-          order by month_start`
+          order by month_start`,
+        [user.clinic_id]
       ),
     ])
 

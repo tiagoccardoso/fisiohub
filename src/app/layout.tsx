@@ -2,41 +2,42 @@ import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import { AppProviders } from './providers'
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://fisiohub.vercel.app'
 
 export const metadata: Metadata = {
-  title: 'FisioSys - Sistema de Gestão Clínica',
+  title: 'FisioHub - Sistema de Gestão Clínica',
   description: 'Sistema integrado de gestão para clínica de fisioterapia com funcionalidades de mentoria, projetos e colaboração.',
-  metadataBase: new URL('https://fisiosys.vercel.app'),
+  metadataBase: new URL(siteUrl),
   keywords: ['fisioterapia', 'gestão', 'clínica', 'mentoria', 'projetos', 'colaboração', 'prontuário eletrônico'],
-  authors: [{ name: 'FisioSys Team', url: 'https://fisiosys.vercel.app' }],
-  creator: 'FisioSys',
-  publisher: 'FisioSys',
+  authors: [{ name: 'FisioHub Team', url: siteUrl }],
+  creator: 'FisioHub',
+  publisher: 'FisioHub',
   robots: {
     index: true,
     follow: true,
   },
   alternates: {
-    canonical: 'https://fisiosys.vercel.app',
+    canonical: siteUrl,
   },
   openGraph: {
     type: 'website',
     locale: 'pt_BR',
-    url: 'https://fisiosys.vercel.app',
-    title: 'FisioSys - Otimize sua Clínica de Fisioterapia',
+    url: siteUrl,
+    title: 'FisioHub - Otimize sua Clínica de Fisioterapia',
     description: 'Sistema de gestão completo para fisioterapeutas. Gerencie pacientes, agendamentos, exercícios e finanças em um só lugar.',
-    siteName: 'FisioSys',
+    siteName: 'FisioHub',
     images: [
       {
         url: '/opengraph-image.png', // Placeholder image
         width: 1200,
         height: 630,
-        alt: 'FisioSys - Sistema de Gestão para Clínicas de Fisioterapia',
+        alt: 'FisioHub - Sistema de Gestão para Clínicas de Fisioterapia',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'FisioSys - Otimize sua Clínica de Fisioterapia',
+    title: 'FisioHub - Otimize sua Clínica de Fisioterapia',
     description: 'Sistema de gestão completo para fisioterapeutas. Gerencie pacientes, agendamentos, exercícios e finanças em um só lugar.',
     images: ['/twitter-image.png'], // Placeholder image
   },
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'FisioSys',
+    title: 'FisioHub',
   },
   formatDetection: {
     telephone: false,
@@ -73,14 +74,9 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'FisioSys',
-    url: 'https://fisiosys.vercel.app',
-    logo: 'https://fisiosys.vercel.app/favicon.svg',
-    contactPoint: {
-      '@type': 'ContactPoint',
-      contactType: 'Customer Support',
-      email: 'suporte@manusfisio.com'
-    }
+    name: 'FisioHub',
+    url: siteUrl,
+    logo: `${siteUrl}/favicon.svg`,
   }
 
   return (

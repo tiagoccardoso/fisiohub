@@ -2,7 +2,7 @@ import { Pool } from '@neondatabase/serverless'
 
 export type DbValue = string | number | boolean | null | Date | Record<string, unknown> | unknown[]
 
-const globalForNeon = globalThis as unknown as { __fisiosysNeonPool?: Pool }
+const globalForNeon = globalThis as unknown as { __fisiohubNeonPool?: Pool }
 
 export const getDatabaseUrl = () => process.env.DATABASE_URL || ''
 export const getUnpooledConnectionString = () => process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL || ''
@@ -18,8 +18,8 @@ export const assertNeonConfigured = () => {
 export function getNeonPool() {
   const connectionString = assertNeonConfigured()
 
-  if (!globalForNeon.__fisiosysNeonPool) {
-    globalForNeon.__fisiosysNeonPool = new Pool({
+  if (!globalForNeon.__fisiohubNeonPool) {
+    globalForNeon.__fisiohubNeonPool = new Pool({
       connectionString,
       max: Number(process.env.DATABASE_POOL_MAX || 5),
       idleTimeoutMillis: 20_000,
@@ -27,7 +27,27 @@ export function getNeonPool() {
     })
   }
 
-  return globalForNeon.__fisiosysNeonPool
+  return globalForNeon.__fisiohubNeonPool
+}
+
+export type TransactionClient = {
+  query<T = Record<string, unknown>>(text: string, values?: unknown[]): Promise<{ rows: T[] }>
+  release(): void
+}
+
+export async function withTransaction<T>(callback: (client: TransactionClient) => Promise<T>) {
+  const client = await getNeonPool().connect()
+  try {
+    await client.query('begin')
+    const result = await callback(client as TransactionClient)
+    await client.query('commit')
+    return result
+  } catch (error) {
+    await client.query('rollback')
+    throw error
+  } finally {
+    client.release()
+  }
 }
 
 export async function query<T = Record<string, unknown>>(text: string, values: unknown[] = []): Promise<T[]> {

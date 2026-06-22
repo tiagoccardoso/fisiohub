@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
+import {
   Calendar,
   Users,
   CheckSquare,
@@ -87,7 +87,7 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
             Painel de Ferramentas MCP
           </CardTitle>
           <CardDescription>
-            Interface para testar e usar as ferramentas do Model Context Protocol do sistema FisioSys
+            Interface para testar e usar as ferramentas do Model Context Protocol do sistema FisioHub
           </CardDescription>
         </CardHeader>
       </Card>
@@ -112,14 +112,14 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
-                <Button 
+                <Button
                   onClick={() => executeToolCall(() => mcpClient.systemHealthCheck())}
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Verificar Saúde do Sistema
                 </Button>
-                <Button 
+                <Button
                   onClick={() => executeToolCall(() => mcpClient.getDashboardStats())}
                   disabled={loading}
                   variant="outline"
@@ -143,14 +143,14 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
-                <Button 
+                <Button
                   onClick={() => executeToolCall(() => mcpClient.getCalendarEvents())}
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Listar Todos os Eventos
                 </Button>
-                <Button 
+                <Button
                   onClick={() => {
                     const today = new Date().toISOString().split('T')[0];
                     executeToolCall(() => mcpClient.getCalendarEvents({
@@ -183,8 +183,8 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
                   </div>
                   <div>
                     <Label htmlFor="event-type">Tipo</Label>
-                    <Select 
-                      value={newEvent.event_type} 
+                    <Select
+                      value={newEvent.event_type}
                       onValueChange={(value: any) => setNewEvent(prev => ({ ...prev, event_type: value }))}
                     >
                       <SelectTrigger>
@@ -226,7 +226,7 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
                     />
                   </div>
                 </div>
-                <Button 
+                <Button
                   className="mt-3"
                   onClick={() => {
                     if (!newEvent.title || !newEvent.start_time || !newEvent.end_time) {
@@ -266,7 +266,7 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="flex-1"
                 />
-                <Button 
+                <Button
                   onClick={() => {
                     if (!searchQuery.trim()) {
                       setError('Digite um termo de busca');
@@ -316,7 +316,7 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
                     />
                   </div>
                 </div>
-                <Button 
+                <Button
                   className="mt-3"
                   onClick={() => {
                     if (!newPatient.name.trim()) {
@@ -346,14 +346,14 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex gap-2">
-                <Button 
+                <Button
                   onClick={() => executeToolCall(() => mcpClient.getTasks())}
                   disabled={loading}
                 >
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Todas as Tarefas
                 </Button>
-                <Button 
+                <Button
                   onClick={() => executeToolCall(() => mcpClient.getTasks({ status: 'pendente' }))}
                   disabled={loading}
                   variant="outline"
@@ -361,7 +361,7 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Pendentes
                 </Button>
-                <Button 
+                <Button
                   onClick={() => executeToolCall(() => mcpClient.getTasks({ priority: 'urgente' }))}
                   disabled={loading}
                   variant="outline"
@@ -388,8 +388,8 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
                   </div>
                   <div>
                     <Label htmlFor="task-priority">Prioridade</Label>
-                    <Select 
-                      value={newTask.priority} 
+                    <Select
+                      value={newTask.priority}
                       onValueChange={(value: any) => setNewTask(prev => ({ ...prev, priority: value }))}
                     >
                       <SelectTrigger>
@@ -413,7 +413,7 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
                     />
                   </div>
                 </div>
-                <Button 
+                <Button
                   className="mt-3"
                   onClick={() => {
                     if (!newTask.title.trim()) {
@@ -442,7 +442,7 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <Button 
+              <Button
                 onClick={() => executeToolCall(() => mcpClient.getDashboardStats())}
                 disabled={loading}
               >
@@ -484,4 +484,4 @@ export default function MCPToolsPanel({ className }: MCPToolsPanelProps) {
       )}
     </div>
   );
-} 
+}

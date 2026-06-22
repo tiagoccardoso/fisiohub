@@ -99,8 +99,8 @@ const mockProjects: Project[] = [
     tags: ['covid', 'reabilitação', 'protocolo'],
     owner: {
       id: '1',
-      full_name: 'Profissional FisioSys',
-      email: 'usuario@fisiosys.com',
+      full_name: 'Profissional FisioHub',
+      email: 'usuario@fisiohub.com',
       role: 'admin'
     }
   },
@@ -173,8 +173,8 @@ const mockTasks: Task[] = [
     updated_at: '2024-01-30T00:00:00Z',
     assignee: {
       id: '1',
-      full_name: 'Profissional FisioSys',
-      email: 'usuario@fisiosys.com',
+      full_name: 'Profissional FisioHub',
+      email: 'usuario@fisiohub.com',
       role: 'admin'
     }
   }

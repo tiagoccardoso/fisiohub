@@ -1,5 +1,5 @@
 /**
- * Sistema de Cache Avançado para FisioSys
+ * Sistema de Cache Avançado para FisioHub
  * Implementa cache em memória, localStorage e sessionStorage
  */
 
@@ -47,8 +47,8 @@ export class CacheManager {
    * Armazena dados no cache
    */
   set<T>(
-    key: string, 
-    data: T, 
+    key: string,
+    data: T,
     options: {
       ttl?: number
       persistent?: boolean
@@ -155,15 +155,15 @@ export class CacheManager {
    */
   delete(key: string): boolean {
     const deleted = this.memoryCache.delete(key)
-    
+
     if (this.config.enablePersistent) {
       localStorage.removeItem(`cache_${key}`)
     }
-    
+
     if (this.config.enableSessionStorage) {
       sessionStorage.removeItem(`cache_${key}`)
     }
-    
+
     return deleted
   }
 
@@ -172,14 +172,14 @@ export class CacheManager {
    */
   deleteByTags(tags: string[]): number {
     let deletedCount = 0
-    
+
     for (const [key, entry] of this.memoryCache.entries()) {
       if (entry.tags && entry.tags.some(tag => tags.includes(tag))) {
         this.delete(key)
         deletedCount++
       }
     }
-    
+
     return deletedCount
   }
 
@@ -188,7 +188,7 @@ export class CacheManager {
    */
   clear(): void {
     this.memoryCache.clear()
-    
+
     if (this.config.enablePersistent) {
       try {
         const keys = Object.keys(localStorage)
@@ -201,7 +201,7 @@ export class CacheManager {
         console.warn('Failed to clear localStorage:', error)
       }
     }
-    
+
     if (this.config.enableSessionStorage) {
       try {
         const keys = Object.keys(sessionStorage)
@@ -227,12 +227,12 @@ export class CacheManager {
   } {
     const entries = Array.from(this.memoryCache.values())
     const now = Date.now()
-    
+
     return {
       memorySize: this.memoryCache.size,
       memoryEntries: entries.length,
       hitRate: this.calculateHitRate(),
-      oldestEntry: entries.length > 0 
+      oldestEntry: entries.length > 0
         ? Math.min(...entries.map(e => e.timestamp))
         : null
     }
@@ -244,13 +244,13 @@ export class CacheManager {
   private cleanup(): void {
     const now = Date.now()
     const toDelete: string[] = []
-    
+
     for (const [key, entry] of this.memoryCache.entries()) {
       if (!this.isValid(entry)) {
         toDelete.push(key)
       }
     }
-    
+
     toDelete.forEach(key => this.delete(key))
   }
 
@@ -260,14 +260,14 @@ export class CacheManager {
   private evictOldest(): void {
     let oldestKey = ''
     let oldestTime = Date.now()
-    
+
     for (const [key, entry] of this.memoryCache.entries()) {
       if (entry.timestamp < oldestTime) {
         oldestTime = entry.timestamp
         oldestKey = key
       }
     }
-    
+
     if (oldestKey) {
       this.delete(oldestKey)
     }
@@ -280,7 +280,7 @@ export class CacheManager {
     const now = Date.now()
     const isExpired = now - entry.timestamp > entry.ttl
     const isWrongVersion = entry.version !== this.config.version
-    
+
     return !isExpired && !isWrongVersion
   }
 
@@ -353,7 +353,7 @@ export const useCache = <T>(
   const [data, setData] = React.useState<T | null>(null)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<Error | null>(null)
-  
+
   const cache = options.cacheInstance || globalCache
   const enabled = options.enabled !== false
 
@@ -470,4 +470,4 @@ export const cacheUtils = {
 export default globalCache
 
 // Importar React para o hook
-import React from 'react' 
+import React from 'react'

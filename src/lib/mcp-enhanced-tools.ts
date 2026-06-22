@@ -1,4 +1,4 @@
-// Enhanced MCP Tools for FisioSys - Phase 6
+// Enhanced MCP Tools for FisioHub - Phase 6
 export const enhancedMCPTools = {
   generate_report: {
     name: "generate_report",
@@ -45,7 +45,7 @@ export const enhancedMCPTools = {
     handler: async (args: any) => {
       try {
         const { report_type, date_range, filters = {}, format = "pdf", include_charts = true } = args;
-        
+
         // Simulate advanced report generation with real data insights
         const reportData = {
           report_id: `report_${Date.now()}`,
@@ -55,7 +55,7 @@ export const enhancedMCPTools = {
           filters: filters,
           format: format,
           status: "generated",
-          download_url: `https://fisiosys.app/reports/${report_type}_${Date.now()}.${format}`,
+          download_url: `https://fisiohub.app/reports/${report_type}_${Date.now()}.${format}`,
           summary: {
             total_records: Math.floor(Math.random() * 1000) + 100,
             key_insights: getReportInsights(report_type),
@@ -63,7 +63,7 @@ export const enhancedMCPTools = {
             data_quality_score: Math.floor(Math.random() * 20) + 80 // 80-100%
           }
         };
-        
+
         return {
           content: [{
             type: "text",
@@ -82,88 +82,6 @@ export const enhancedMCPTools = {
           content: [{
             type: "text",
             text: `❌ Erro ao gerar relatório: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
-          }]
-        };
-      }
-    }
-  },
-
-  backup_data: {
-    name: "backup_data",
-    description: "Realiza backup completo ou parcial dos dados da clínica com verificação de integridade",
-    inputSchema: {
-      type: "object",
-      properties: {
-        backup_type: {
-          type: "string",
-          enum: ["full", "incremental", "patients_only", "appointments_only", "documents_only", "custom"],
-          description: "Tipo de backup a ser realizado"
-        },
-        include_files: {
-          type: "boolean",
-          default: true,
-          description: "Incluir arquivos anexos no backup"
-        },
-        encryption: {
-          type: "boolean",
-          default: true,
-          description: "Criptografar o backup"
-        },
-        compression_level: {
-          type: "string",
-          enum: ["low", "medium", "high"],
-          default: "medium",
-          description: "Nível de compressão"
-        },
-        verify_integrity: {
-          type: "boolean",
-          default: true,
-          description: "Verificar integridade após backup"
-        }
-      },
-      required: ["backup_type"]
-    },
-    handler: async (args: any) => {
-      try {
-        const { backup_type, include_files = true, encryption = true, compression_level = "medium", verify_integrity = true } = args;
-        
-        // Simulate advanced backup process
-        const backupResult = {
-          backup_id: `backup_${Date.now()}`,
-          type: backup_type,
-          created_at: new Date().toISOString(),
-          size_mb: Math.floor(Math.random() * 500) + 50,
-          compressed_size_mb: Math.floor((Math.floor(Math.random() * 500) + 50) * 0.6), // ~60% compression
-          encrypted: encryption,
-          includes_files: include_files,
-          compression_level: compression_level,
-          status: "completed",
-          integrity_check: verify_integrity ? "passed" : "skipped",
-          storage_location: `s3://manus-backups/${backup_type}_${Date.now()}.tar.gz${encryption ? '.enc' : ''}`,
-          retention_days: 90,
-          next_backup_scheduled: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days from now
-        };
-        
-        return {
-          content: [{
-            type: "text",
-            text: `💾 Cópia de segurança ${backup_type} realizada com sucesso!\n\n` +
-                  `📦 ID da cópia de segurança: ${backupResult.backup_id}\n` +
-                  `💾 Tamanho original: ${backupResult.size_mb} MB\n` +
-                  `🗜️ Tamanho comprimido: ${backupResult.compressed_size_mb} MB (${compression_level})\n` +
-                  `🔒 Criptografado: ${encryption ? 'Sim' : 'Não'}\n` +
-                  `📁 Inclui arquivos: ${include_files ? 'Sim' : 'Não'}\n` +
-                  `✅ Verificação de integridade: ${backupResult.integrity_check}\n` +
-                  `⏰ Retenção: ${backupResult.retention_days} dias\n` +
-                  `📅 Próximo backup: ${new Date(backupResult.next_backup_scheduled).toLocaleDateString('pt-BR')}\n` +
-                  `📍 Localização: ${backupResult.storage_location}`
-          }]
-        };
-      } catch (error) {
-        return {
-          content: [{
-            type: "text",
-            text: `❌ Erro ao realizar backup: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
           }]
         };
       }
@@ -216,7 +134,7 @@ export const enhancedMCPTools = {
     handler: async (args: any) => {
       try {
         const { recipient_type, recipient_id, message_type, message, schedule_time, include_attachments = false, priority = "normal" } = args;
-        
+
         // Simulate WhatsApp notification sending with enhanced features
         const notificationResult = {
           notification_id: `whatsapp_${Date.now()}`,
@@ -232,19 +150,19 @@ export const enhancedMCPTools = {
           response_expected: ["follow_up", "satisfaction_survey"].includes(message_type),
           estimated_delivery: schedule_time ? schedule_time : new Date(Date.now() + 30000).toISOString() // 30 seconds
         };
-        
+
         const messageTemplates = {
-          appointment_reminder: "🏥 Olá! Você tem uma consulta de fisioterapia agendada para amanhã às 14h na Clínica FisioSys. Por favor, confirme sua presença respondendo este WhatsApp. Obrigado!",
+          appointment_reminder: "🏥 Olá! Você tem uma consulta de fisioterapia agendada para amanhã às 14h na Clínica FisioHub. Por favor, confirme sua presença respondendo este WhatsApp. Obrigado!",
           treatment_update: "📋 Ótimas notícias! Seu progresso no tratamento está excelente! Continue seguindo as orientações e exercícios prescritos. Qualquer dúvida, estamos aqui para ajudar.",
           payment_reminder: "💳 Lembrete amigável: Sua mensalidade da fisioterapia vence em 3 dias. Você pode pagar pelo PIX ou cartão através do link que enviamos por email. Dúvidas? Fale conosco!",
           emergency_alert: "🚨 URGENTE: Por favor, entre em contato com a clínica imediatamente. Situação que requer atenção médica.",
           follow_up: "📞 Como você está se sentindo após a última sessão? Gostaríamos de saber sobre seu progresso e se tem alguma dúvida sobre os exercícios.",
-          satisfaction_survey: "⭐ Sua opinião é muito importante! Avalie nosso atendimento respondendo esta breve pesquisa: [link]. Obrigado por confiar na FisioSys!",
+          satisfaction_survey: "⭐ Sua opinião é muito importante! Avalie nosso atendimento respondendo esta breve pesquisa: [link]. Obrigado por confiar na FisioHub!",
           custom: message
         };
-        
+
         const messageContent = messageTemplates[message_type as keyof typeof messageTemplates] || message;
-        
+
         return {
           content: [{
             type: "text",
@@ -316,7 +234,7 @@ export const enhancedMCPTools = {
     handler: async (args: any) => {
       try {
         const { analysis_type, time_period, custom_period, include_predictions = false, comparison_period = true, detail_level = "detailed" } = args;
-        
+
         // Simulate advanced analytics with AI insights
         const analyticsResult = {
           analysis_id: `analytics_${Date.now()}`,
@@ -330,23 +248,23 @@ export const enhancedMCPTools = {
           recommendations: getRecommendations(analysis_type),
           confidence_score: Math.floor(Math.random() * 20) + 80 // 80-100%
         };
-        
+
         const metricsText = Object.entries(analyticsResult.metrics)
           .map(([key, value]) => `• ${key.replace(/_/g, ' ')}: ${value}`)
           .join('\n');
-        
-        const trendsText = comparison_period && analyticsResult.trends ? 
+
+        const trendsText = comparison_period && analyticsResult.trends ?
           `\n📈 Tendências (vs período anterior):\n${Object.entries(analyticsResult.trends)
             .map(([key, value]) => `• ${key.replace(/_/g, ' ')}: ${value}`)
             .join('\n')}` : '';
-        
-        const predictionsText = include_predictions && analyticsResult.predictions ? 
+
+        const predictionsText = include_predictions && analyticsResult.predictions ?
           `\n🔮 Previsões IA (${analyticsResult.confidence_score}% confiança):\n${Object.entries(analyticsResult.predictions)
             .map(([key, value]) => `• ${key.replace(/_/g, ' ')}: ${value}`)
             .join('\n')}` : '';
-        
+
         const recommendationsText = `\n💡 Recomendações:\n${analyticsResult.recommendations.map(r => `• ${r}`).join('\n')}`;
-        
+
         return {
           content: [{
             type: "text",
@@ -396,7 +314,7 @@ export const enhancedMCPTools = {
     handler: async (args: any) => {
       try {
         const { optimization_type, priority = "medium", apply_changes = false } = args;
-        
+
         const optimizationResult = {
           optimization_id: `opt_${Date.now()}`,
           type: optimization_type,
@@ -408,7 +326,7 @@ export const enhancedMCPTools = {
           recommendations: getOptimizationRecommendations(optimization_type),
           next_optimization_due: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
         };
-        
+
         return {
           content: [{
             type: "text",
@@ -460,7 +378,7 @@ function getReportInsights(reportType: string): string[] {
       "Satisfação dos funcionários: 4.7/5"
     ]
   };
-  
+
   return insights[reportType as keyof typeof insights] || [
     "Análise concluída com sucesso",
     "Dados coletados e processados",
@@ -499,7 +417,7 @@ function getAnalyticsMetrics(analysisType: string): Record<string, any> {
       collection_rate: "96%"
     }
   };
-  
+
   return metrics[analysisType as keyof typeof metrics] || {};
 }
 
@@ -544,7 +462,7 @@ function getRecommendations(analysisType: string): string[] {
       "Otimizar precificação de procedimentos"
     ]
   };
-  
+
   return recommendations[analysisType as keyof typeof recommendations] || [
     "Continuar monitoramento regular",
     "Implementar melhorias graduais",
@@ -580,10 +498,10 @@ function getOptimizationRecommendations(optimizationType: string): string[] {
       "Estabelecer métricas de performance"
     ]
   };
-  
+
   return recommendations[optimizationType as keyof typeof recommendations] || [
     "Análise concluída",
     "Implementar melhorias graduais",
     "Monitorar resultados"
   ];
-} 
+}

@@ -5,6 +5,8 @@ import { verifyPassword } from '@/lib/password'
 
 type LoginUser = {
   id: string
+  clinic_id: string
+  clinic_name: string
   email: string
   full_name: string
   role: string
@@ -30,9 +32,10 @@ export async function POST(request: Request) {
 
   try {
     const user = await queryOne<LoginUser>(
-      `select id, email, full_name, role, is_active, password_hash
-         from public.users
-        where lower(email::text) = lower($1)
+      `select u.id, u.clinic_id, c.name as clinic_name, u.email, u.full_name, u.role, u.is_active, u.password_hash
+         from public.users u
+         join public.clinics c on c.id = u.clinic_id and c.is_active = true
+        where lower(u.email::text) = lower($1)
         limit 1`,
       [normalizedEmail]
     )
@@ -57,6 +60,8 @@ export async function POST(request: Request) {
       ok: true,
       user: {
         id: user.id,
+        clinic_id: user.clinic_id,
+        clinic_name: user.clinic_name,
         email: user.email,
         role: user.role,
         full_name: user.full_name,

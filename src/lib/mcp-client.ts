@@ -28,7 +28,7 @@ export interface MCPServerInfo {
   version: string;
 }
 
-// Cliente MCP para o sistema FisioSys
+// Cliente MCP para o sistema FisioHub
 export class ManusFisioMCPClient {
   private baseUrl: string;
 
@@ -204,4 +204,4 @@ const newPatient = await mcpClient.createPatient({
   email: 'joao@email.com',
   phone: '(11) 99999-9999'
 });
-*/ 
+*/

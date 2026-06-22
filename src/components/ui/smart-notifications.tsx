@@ -118,12 +118,12 @@ const mockNotifications: Notification[] = [
   {
     id: '5',
     type: 'system',
-    title: 'Cópia de Segurança Concluída',
-    message: 'A cópia de segurança automática dos dados foi realizada com sucesso',
+    title: 'Sincronizacao concluida',
+    message: 'Os dados locais foram sincronizados com sucesso',
     priority: 'low',
     read: true,
     created_at: new Date(Date.now() - 172800000).toISOString(),
-    metadata: { backup_size: '2.3GB' }
+    metadata: {}
   }
 ]
 
@@ -852,7 +852,7 @@ export function NotificationSettings() {
                   })
 
                   if (settings.push_notifications && permission === 'granted') {
-                    new Notification('FisioSys - Teste', {
+                    new Notification('FisioHub - Teste', {
                       body: 'Esta é uma notificação push de teste.',
                       icon: '/icons/icon-192x192.png',
                     })

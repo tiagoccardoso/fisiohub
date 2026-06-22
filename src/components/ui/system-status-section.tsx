@@ -11,7 +11,7 @@ export function SystemStatusSection() {
           <div>
             <CardTitle className="text-slate-50 flex items-center space-x-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
-              <span>Sistema FisioSys - Situação Completa</span>
+              <span>Sistema FisioHub - Situação Completa</span>
             </CardTitle>
             <CardDescription className="text-slate-300">
               Todas as 5 fases de desenvolvimento concluídas com sucesso

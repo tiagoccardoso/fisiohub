@@ -100,7 +100,7 @@ jspm_packages/
 
 # Segurança: variáveis, credenciais e arquivos locais
 .env.*
-!env.example
+!.env.example
 *.local
 
 # Cursor / MCP local com credenciais

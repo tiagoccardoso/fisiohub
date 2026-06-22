@@ -4,7 +4,7 @@ import { query } from '@/lib/db-neon'
 
 export async function GET() {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const mentorships = await query(
       `select m.id,
               m.mentor_id,
@@ -26,14 +26,16 @@ export async function GET() {
          left join lateral (
            select json_agg(ce order by ce.evaluation_date desc) as items
              from public.competency_evaluations ce
-            where ce.mentorship_id = m.id
+            where ce.mentorship_id = m.id and ce.clinic_id = $1
          ) competencies on true
          left join lateral (
            select json_agg(pn order by pn.date desc) as items
              from public.progress_notes pn
-            where pn.mentorship_id = m.id
+            where pn.mentorship_id = m.id and pn.clinic_id = $1
          ) notes on true
-        order by m.created_at desc`
+        where m.clinic_id = $1
+        order by m.created_at desc`,
+      [user.clinic_id]
     )
 
     return NextResponse.json(mentorships)

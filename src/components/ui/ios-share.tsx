@@ -14,11 +14,11 @@ interface IOSShareProps {
   className?: string
 }
 
-export function IOSShare({ 
-  url = window.location.href, 
-  title = 'FisioSys',
+export function IOSShare({
+  url = window.location.href,
+  title = 'FisioHub',
   text = 'Sistema de Gestão Clínica',
-  className 
+  className
 }: IOSShareProps) {
   const [copied, setCopied] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
@@ -82,7 +82,7 @@ export function IOSShare({
             <Badge variant="secondary" className="ml-auto">iOS</Badge>
           </Button>
         )}
-        
+
         <Button
           onClick={handleCopyLink}
           className="w-full justify-start"

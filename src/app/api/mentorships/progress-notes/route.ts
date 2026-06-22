@@ -21,12 +21,14 @@ export async function POST(request: NextRequest) {
     const data = validation.data
     const note = await queryOne(
       `insert into public.progress_notes
-        (mentorship_id, content, achievements, next_steps, feedback_type, created_by)
+        (mentorship_id, content, achievements, next_steps, feedback_type, created_by, clinic_id)
        values
-        ($1, $2, $3::text[], $4::text[], $5::public.feedback_type, $6)
+        ($1, $2, $3::text[], $4::text[], $5::public.feedback_type, $6, $7)
        returning id, date::text, content, achievements, next_steps, feedback_type::text, created_by`,
-      [data.mentorship_id, data.content, data.achievements, data.next_steps, data.feedback_type, user.id]
+      [data.mentorship_id, data.content, data.achievements, data.next_steps, data.feedback_type, user.id, user.clinic_id]
     )
+
+    if (!note) return NextResponse.json({ error: 'Mentoria nao encontrada.' }, { status: 404 })
 
     return NextResponse.json(note, { status: 201 })
   } catch (error) {

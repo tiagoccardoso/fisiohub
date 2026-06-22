@@ -27,7 +27,7 @@ const patientSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')?.trim()
 
@@ -36,17 +36,20 @@ export async function GET(request: NextRequest) {
           `select id, full_name, email, phone, birth_date::text, created_at::text
              from public.patients
             where status <> 'archived'
-              and full_name ilike $1
+              and clinic_id = $1
+              and full_name ilike $2
             order by created_at desc
             limit 200`,
-          [`%${search}%`]
+          [user.clinic_id, `%${search}%`]
         )
       : await query(
           `select id, full_name, email, phone, birth_date::text, created_at::text
              from public.patients
             where status <> 'archived'
+              and clinic_id = $1
             order by created_at desc
-            limit 200`
+            limit 200`,
+          [user.clinic_id]
         )
 
     return NextResponse.json(patients)
@@ -73,10 +76,10 @@ export async function POST(request: NextRequest) {
     const newPatient = await queryOne(
       `insert into public.patients
         (full_name, birth_date, gender, cpf, phone, email, address,
-         emergency_contact_name, emergency_contact_phone, initial_medical_history, notes, created_by)
+         emergency_contact_name, emergency_contact_phone, initial_medical_history, notes, created_by, clinic_id)
        values
         ($1, nullif($2, '')::date, $3, nullif($4, ''), nullif($5, ''), nullif($6, '')::citext, $7,
-         $8, $9, $10, $11, $12)
+         $8, $9, $10, $11, $12, $13)
        returning *`,
       [
         data.full_name,
@@ -91,6 +94,7 @@ export async function POST(request: NextRequest) {
         data.initial_medical_history || null,
         data.notes || null,
         user.id,
+        user.clinic_id,
       ]
     )
 

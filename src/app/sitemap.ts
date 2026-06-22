@@ -1,12 +1,11 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = 'https://fisiosys.vercel.app';
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://fisiohub.vercel.app';
 
   const staticRoutes = [
     '/',
     '/analytics',
-    '/backup',
     '/calendar',
     '/collaboration',
     '/dashboard-pro',
@@ -15,7 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/patients',
     '/projects',
     '/settings',
-    '/system-monitor',
+    '/support',
     '/tasks',
     '/team',
     '/auth/login'
@@ -27,4 +26,4 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: 'weekly',
     priority: route === '/' ? 1 : 0.8,
   }));
-} 
+}

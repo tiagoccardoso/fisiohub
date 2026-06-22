@@ -40,7 +40,7 @@ export function SetupNotice() {
             <AlertDescription className="text-amber-700 dark:text-amber-300">
               <p>
                 <Database className="inline h-4 w-4 mr-1" />
-                Configure <code>DATABASE_URL</code> no ambiente para conectar o FisioSys ao Neon/PostgreSQL.
+                Configure <code>DATABASE_URL</code> no ambiente para conectar o FisioHub ao Neon/PostgreSQL.
               </p>
             </AlertDescription>
           </Alert>

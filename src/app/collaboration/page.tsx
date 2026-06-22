@@ -3,7 +3,7 @@ import { CollaborationPanel } from '@/components/ui/collaboration-panel'
 import { DashboardLayout } from '@/components/layouts/dashboard-layout'
 
 export const metadata: Metadata = {
-  title: 'Colaboração - FisioSys',
+  title: 'Colaboração - FisioHub',
   description: 'Colabore em tempo real com sua equipe',
 }
 
@@ -17,7 +17,7 @@ export default function CollaborationPage() {
             Colabore em tempo real com comentários, versões e controle de usuários
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             {/* Área principal do documento */}
@@ -51,9 +51,9 @@ export default function CollaborationPage() {
               </div>
             </div>
           </div>
-          
+
           <div className="lg:col-span-1">
-            <CollaborationPanel 
+            <CollaborationPanel
               documentId="doc-exemplo-001"
               documentTitle="Avaliação - João Silva"
             />
@@ -62,4 +62,4 @@ export default function CollaborationPage() {
       </div>
     </DashboardLayout>
   )
-} 
+}

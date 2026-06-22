@@ -97,7 +97,7 @@ export default function DashboardPro() {
                 </Button>
                 <h1 className="text-3xl font-bold flex items-center gap-3">
                   <Crown className="h-8 w-8 text-primary" />
-                  FisioSys Pro
+                  FisioHub Pro
                   <Badge>
                     <Sparkles className="h-3 w-3 mr-1" />
                     Avançado

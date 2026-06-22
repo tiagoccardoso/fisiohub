@@ -3,6 +3,8 @@ import { queryOne } from '@/lib/db-neon'
 
 export type User = {
   id: string
+  clinic_id: string
+  clinic_name: string
   auth_user_id?: string | null
   email: string
   full_name: string
@@ -23,23 +25,26 @@ export async function getUser() {
   if (!session?.uid) return null
 
   return queryOne<User>(
-    `select id,
-            auth_user_id,
-            email,
-            full_name,
-            avatar_url,
-            role,
-            phone,
-            crefito,
-            specialty,
-            university,
-            semester,
-            is_active,
-            created_at::text,
-            updated_at::text
-       from public.users
-      where id = $1
-        and is_active = true
+    `select u.id,
+            u.auth_user_id,
+            u.clinic_id,
+            c.name as clinic_name,
+            u.email,
+            u.full_name,
+            u.avatar_url,
+            u.role,
+            u.phone,
+            u.crefito,
+            u.specialty,
+            u.university,
+            u.semester,
+            u.is_active,
+            u.created_at::text,
+            u.updated_at::text
+       from public.users u
+       join public.clinics c on c.id = u.clinic_id and c.is_active = true
+      where u.id = $1
+        and u.is_active = true
       limit 1`,
     [session.uid]
   )

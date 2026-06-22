@@ -37,7 +37,7 @@ const fetchNotebooks = async (): Promise<Notebook[]> => {
           created_at: '2024-01-15T10:00:00Z',
           updated_at: '2024-01-20T14:30:00Z',
           owner_id: 'mock-user-1',
-          owner: { full_name: 'Profissional FisioSys', email: 'usuario@fisiosys.com' },
+          owner: { full_name: 'Profissional FisioHub', email: 'usuario@fisiohub.com' },
           is_public: false
         },
         {
@@ -50,7 +50,7 @@ const fetchNotebooks = async (): Promise<Notebook[]> => {
           created_at: '2024-01-10T08:00:00Z',
           updated_at: '2024-01-18T16:45:00Z',
           owner_id: 'mock-user-1',
-          owner: { full_name: 'Profissional FisioSys', email: 'usuario@fisiosys.com' },
+          owner: { full_name: 'Profissional FisioHub', email: 'usuario@fisiohub.com' },
           is_public: false
         }
       ];

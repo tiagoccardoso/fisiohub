@@ -9,6 +9,8 @@ export async function GET() {
     authenticated: true,
     user: {
       id: user.id,
+      clinic_id: user.clinic_id,
+      clinic_name: user.clinic_name,
       email: user.email,
       full_name: user.full_name,
       role: user.role,

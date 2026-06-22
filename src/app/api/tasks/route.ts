@@ -30,18 +30,18 @@ const taskSelect = `select t.*,
 
 export async function GET(request: NextRequest) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const { searchParams } = new URL(request.url)
     const projectId = searchParams.get('project_id')
 
     const tasks = projectId
       ? await query(
           `${taskSelect}
-            where t.project_id = $1
+            where t.project_id = $1 and t.clinic_id = $2
             order by t.order_index asc, t.created_at desc`,
-          [projectId]
+          [projectId, user.clinic_id]
         )
-      : await query(`${taskSelect} order by t.order_index asc, t.created_at desc limit 200`)
+      : await query(`${taskSelect} where t.clinic_id = $1 order by t.order_index asc, t.created_at desc limit 200`, [user.clinic_id])
 
     return NextResponse.json(tasks)
   } catch (error) {
@@ -63,9 +63,9 @@ export async function POST(request: NextRequest) {
     const data = validation.data
     const task = await queryOne(
       `insert into public.tasks
-        (project_id, parent_task_id, title, description, status, priority, assigned_to, assignee_id, patient_id, due_date, order_index, created_by)
+        (project_id, parent_task_id, title, description, status, priority, assigned_to, assignee_id, patient_id, due_date, order_index, created_by, clinic_id)
        values
-        ($1, $2, $3, $4, $5::public.task_status, $6::public.task_priority, $7, $8, $9, nullif($10, '')::timestamptz, coalesce($11, 0), $12)
+        ($1, $2, $3, $4, $5::public.task_status, $6::public.task_priority, $7, $8, $9, nullif($10, '')::timestamptz, coalesce($11, 0), $12, $13)
        returning *`,
       [
         data.project_id || null,
@@ -80,6 +80,7 @@ export async function POST(request: NextRequest) {
         data.due_date || '',
         data.order_index ?? 0,
         user.id,
+        user.clinic_id,
       ]
     )
 
@@ -96,7 +97,7 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const body = await request.json()
     const validation = TaskSchema.partial().extend({ id: z.string().uuid() }).safeParse(body)
     if (!validation.success) return NextResponse.json({ error: validation.error.format() }, { status: 400 })
@@ -118,7 +119,7 @@ export async function PUT(request: NextRequest) {
           due_date = coalesce(nullif($11, '')::timestamptz, due_date),
           order_index = coalesce($12, order_index),
           updated_at = now()
-        where id = $1
+        where id = $1 and clinic_id = $13
         returning *`,
       [
         id,
@@ -133,6 +134,7 @@ export async function PUT(request: NextRequest) {
         data.patient_id ?? null,
         data.due_date ?? '',
         data.order_index ?? null,
+        user.clinic_id,
       ]
     )
 
@@ -149,12 +151,13 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
     if (!id) return NextResponse.json({ error: 'O ID da tarefa é obrigatório' }, { status: 400 })
 
-    await execute('delete from public.tasks where id = $1', [id])
+    const result = await execute('delete from public.tasks where id = $1 and clinic_id = $2', [id, user.clinic_id])
+    if (result.rowCount === 0) return NextResponse.json({ error: 'Tarefa nao encontrada.' }, { status: 404 })
     return NextResponse.json({ success: true })
   } catch (error) {
     const unauthorized = error instanceof Error && error.message === 'Não autorizado'

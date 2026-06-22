@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { authenticateRequest } from '@/lib/auth-request'
 import { z } from 'zod'
 import { createServerAuthClient } from '@/lib/auth-server'
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { Database } from '@/types/database.types'
-
-// Initialize Neon/PostgreSQL e clientes de IA
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
 // This is the original mock implementation to ensure the app remains functional
 // while the type generation issue is being resolved.
@@ -142,10 +137,10 @@ function generateRecommendations(
 ): ExerciseRecommendation[] {
   // AI-powered recommendation logic
   const recommendations: ExerciseRecommendation[] = []
-  
+
   // Filter exercises based on condition
-  const relevantExercises = exerciseDatabase.filter(exercise => 
-    exercise.indications.some(indication => 
+  const relevantExercises = exerciseDatabase.filter(exercise =>
+    exercise.indications.some(indication =>
       indication.toLowerCase().includes(condition.toLowerCase()) ||
       condition.toLowerCase().includes(indication.toLowerCase())
     )
@@ -169,7 +164,7 @@ function generateRecommendations(
     reasoning.push(`Ajuste por severidade (${severity}): ${Math.round((severityMultiplier - 1) * 100)}%`)
 
     // Goals alignment
-    const goalAlignment = goals.filter(goal => 
+    const goalAlignment = goals.filter(goal =>
       exercise.category.toLowerCase().includes(goal.toLowerCase()) ||
       goal.toLowerCase().includes(exercise.category.toLowerCase())
     ).length * 15
@@ -236,7 +231,7 @@ function generateRecommendations(
 
 function generateExpectedOutcomes(exercise: any, condition: string, severity: string): string[] {
   const outcomes = []
-  
+
   switch (exercise.category) {
     case 'Fortalecimento':
       outcomes.push('Aumento da força muscular em 2-4 semanas')
@@ -313,4 +308,4 @@ export async function POST(req: NextRequest) {
     }
     return new Response('Erro interno do servidor', { status: 500 })
   }
-} 
+}

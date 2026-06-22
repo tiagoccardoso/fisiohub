@@ -33,11 +33,11 @@ function getIdFromRequest(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const id = getIdFromRequest(request)
     if (!id) return NextResponse.json({ error: 'ID do paciente não encontrado na URL.' }, { status: 400 })
 
-    const patient = await queryOne('select * from public.patients where id = $1 limit 1', [id])
+    const patient = await queryOne('select * from public.patients where id = $1 and clinic_id = $2 limit 1', [id, user.clinic_id])
     if (!patient) return NextResponse.json({ error: 'Paciente não encontrado' }, { status: 404 })
 
     return NextResponse.json(patient)
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const id = getIdFromRequest(request)
     if (!id) return NextResponse.json({ error: 'ID do paciente não encontrado na URL.' }, { status: 400 })
 
@@ -76,7 +76,7 @@ export async function PUT(request: NextRequest) {
           notes = coalesce($12, notes),
           status = coalesce($13, status),
           updated_at = now()
-        where id = $1
+        where id = $1 and clinic_id = $14
         returning *`,
       [
         id,
@@ -92,6 +92,7 @@ export async function PUT(request: NextRequest) {
         data.initial_medical_history ?? null,
         data.notes ?? null,
         data.status ?? null,
+        user.clinic_id,
       ]
     )
 
@@ -108,11 +109,12 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const id = getIdFromRequest(request)
     if (!id) return NextResponse.json({ error: 'ID do paciente não encontrado na URL.' }, { status: 400 })
 
-    await execute('update public.patients set status = $2, updated_at = now() where id = $1', [id, 'archived'])
+    const result = await execute('update public.patients set status = $2, updated_at = now() where id = $1 and clinic_id = $3', [id, 'archived', user.clinic_id])
+    if (result.rowCount === 0) return NextResponse.json({ error: 'Paciente nao encontrado.' }, { status: 404 })
     return NextResponse.json({ message: 'Paciente arquivado com sucesso' })
   } catch (error) {
     const unauthorized = error instanceof Error && error.message === 'Não autorizado'

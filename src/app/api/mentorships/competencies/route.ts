@@ -27,18 +27,20 @@ export async function POST(request: NextRequest) {
               notes = $4,
               evaluated_by = $5,
               updated_at = now()
-            where id = $1
+            where id = $1 and clinic_id = $6
             returning id, competency, level, evaluation_date::text, notes`,
-          [data.competency_id, data.competency, data.level, data.notes || null, user.id]
+          [data.competency_id, data.competency, data.level, data.notes || null, user.id, user.clinic_id]
         )
       : await queryOne(
           `insert into public.competency_evaluations
-            (mentorship_id, competency, level, notes, evaluated_by)
+            (mentorship_id, competency, level, notes, evaluated_by, clinic_id)
            values
-            ($1, $2, $3, $4, $5)
+            ($1, $2, $3, $4, $5, $6)
            returning id, competency, level, evaluation_date::text, notes`,
-          [data.mentorship_id, data.competency, data.level, data.notes || null, user.id]
+          [data.mentorship_id, data.competency, data.level, data.notes || null, user.id, user.clinic_id]
         )
+
+    if (!competency) return NextResponse.json({ error: 'Mentoria ou competencia nao encontrada.' }, { status: 404 })
 
     return NextResponse.json(competency, { status: data.competency_id ? 200 : 201 })
   } catch (error) {

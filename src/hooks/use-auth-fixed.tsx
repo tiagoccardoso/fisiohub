@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-type AppUser = { id: string; email: string; full_name: string | null; role: string; avatar_url?: string | null; crefito?: string | null; specialty?: string | null; university?: string | null; semester?: number | null; created_at?: string; updated_at?: string };
+export type AppUser = { id: string; clinic_id: string; clinic_name: string; email: string; full_name: string | null; role: string; avatar_url?: string | null; phone?: string | null; crefito?: string | null; specialty?: string | null; university?: string | null; semester?: number | null; created_at?: string; updated_at?: string };
 type Session = { user: AppUser };
 
 type AuthActionResult = { error: Error | null };
@@ -11,9 +11,10 @@ export interface AuthContextType {
   loading: boolean;
   session: Session | null;
   signIn: (email: string, password: string) => Promise<AuthActionResult>;
-  signUp: (email: string, password: string, metadata?: Partial<AppUser> & { passwordConfirmation?: string }) => Promise<AuthActionResult>;
+  signUp: (email: string, password: string, metadata?: Partial<AppUser> & { passwordConfirmation?: string; clinicName?: string; clinicDocument?: string; clinicPhone?: string; clinicEmail?: string; clinicAddress?: string }) => Promise<AuthActionResult>;
   resetPassword: (email: string) => Promise<AuthActionResult>;
   signOut: () => Promise<AuthActionResult>;
+  refreshSession: () => Promise<AuthActionResult>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signUp = async (email: string, password: string, metadata?: Partial<AppUser> & { passwordConfirmation?: string }): Promise<AuthActionResult> => {
+  const signUp = async (email: string, password: string, metadata?: Partial<AppUser> & { passwordConfirmation?: string; clinicName?: string; clinicDocument?: string; clinicPhone?: string; clinicEmail?: string; clinicAddress?: string }): Promise<AuthActionResult> => {
     setLoading(true);
     try {
       const response = await fetch('/api/auth/signup', {
@@ -60,6 +61,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           passwordConfirmation: metadata?.passwordConfirmation,
           fullName: metadata?.full_name,
           role: metadata?.role ?? 'admin',
+          clinicName: metadata?.clinicName,
+          clinicDocument: metadata?.clinicDocument,
+          clinicPhone: metadata?.clinicPhone,
+          clinicEmail: metadata?.clinicEmail,
+          clinicAddress: metadata?.clinicAddress,
         }),
       });
       const payload = await response.json().catch(() => ({}));
@@ -83,6 +89,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return { error: null };
   };
 
+  const refreshSession = async (): Promise<AuthActionResult> => {
+    try {
+      const response = await fetch('/api/auth/session', { cache: 'no-store' });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || !payload?.user) return { error: new Error(payload?.error ?? 'Falha ao atualizar a sessão.') };
+      const nextUser: AppUser = { ...payload.user, full_name: payload.user.full_name ?? null };
+      setUser(nextUser);
+      setSession({ user: nextUser });
+      return { error: null };
+    } catch {
+      return { error: new Error('Falha ao atualizar a sessão.') };
+    }
+  };
+
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -104,7 +124,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, resetPassword, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, resetPassword, signOut, refreshSession }}>
       {children}
     </AuthContext.Provider>
   );
@@ -116,4 +136,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};

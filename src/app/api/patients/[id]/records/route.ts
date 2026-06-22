@@ -18,7 +18,7 @@ function getPatientIdFromRequest(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    await requireAuth()
+    const user = await requireAuth()
     const patientId = getPatientIdFromRequest(request)
     if (!patientId) return NextResponse.json({ error: 'ID do paciente não encontrado na URL.' }, { status: 400 })
 
@@ -28,8 +28,9 @@ export async function GET(request: NextRequest) {
          from public.patient_records pr
          left join public.users u on u.id = pr.created_by
         where pr.patient_id = $1
+          and pr.clinic_id = $2
         order by pr.session_date desc`,
-      [patientId]
+      [patientId, user.clinic_id]
     )
 
     return NextResponse.json(records)
@@ -55,12 +56,16 @@ export async function POST(request: NextRequest) {
     const { content, session_date, title, record_type } = validation.data
     const newRecord = await queryOne(
       `insert into public.patient_records
-        (patient_id, created_by, content, session_date, title, record_type)
-       values
-        ($1, $2, $3::jsonb, coalesce(nullif($4, '')::timestamptz, now()), $5, $6)
+        (patient_id, created_by, content, session_date, title, record_type, clinic_id)
+       select
+        p.id, $2, $3::jsonb, coalesce(nullif($4, '')::timestamptz, now()), $5, $6, $7
+       from public.patients p
+       where p.id = $1 and p.clinic_id = $7
        returning *`,
-      [patientId, user.id, JSON.stringify(content ?? {}), session_date || '', title || null, record_type]
+      [patientId, user.id, JSON.stringify(content ?? {}), session_date || '', title || null, record_type, user.clinic_id]
     )
+
+    if (!newRecord) return NextResponse.json({ error: 'Paciente nao encontrado.' }, { status: 404 })
 
     return NextResponse.json(newRecord, { status: 201 })
   } catch (error) {

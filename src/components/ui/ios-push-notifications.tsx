@@ -15,7 +15,7 @@ export function IOSPushNotifications() {
   useEffect(() => {
     const userAgent = navigator.userAgent
     setIsIOS(/iPad|iPhone|iPod/.test(userAgent))
-    
+
     if ('Notification' in window) {
       setPermission(Notification.permission)
     }
@@ -23,14 +23,14 @@ export function IOSPushNotifications() {
 
   const requestPermission = async () => {
     if (!('Notification' in window)) return
-    
+
     setIsLoading(true)
     try {
       const result = await Notification.requestPermission()
       setPermission(result)
-      
+
       if (result === 'granted') {
-        new Notification('FisioSys', {
+        new Notification('FisioHub', {
           body: 'Notificações ativadas! 🎉',
           icon: '/icons/icon-192x192.png'
         })
@@ -57,7 +57,7 @@ export function IOSPushNotifications() {
             <p className="text-sm text-muted-foreground">Notificações push do iOS</p>
           </div>
         </div>
-        
+
         {permission === 'granted' && (
           <Badge variant="outline" className="text-green-600">
             <Check className="h-3 w-3 mr-1" />
@@ -74,7 +74,7 @@ export function IOSPushNotifications() {
               Ative as notificações para receber lembretes importantes
             </p>
           </div>
-          
+
           <Button
             onClick={requestPermission}
             disabled={isLoading}

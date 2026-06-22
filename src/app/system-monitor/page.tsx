@@ -1,19 +1,5 @@
-import React from 'react'
-import { Metadata } from 'next'
-import { DashboardLayout } from '@/components/layouts/dashboard-layout'
-import { SystemMonitor } from '@/components/ui/system-monitor'
+import { notFound } from 'next/navigation'
 
-export const metadata: Metadata = {
-  title: 'Monitor do Sistema | FisioSys',
-  description: 'Monitoramento em tempo real da saúde e performance do sistema',
-}
-
-export default function SystemMonitorPage() {
-  return (
-    <DashboardLayout>
-      <div className="container mx-auto py-6">
-        <SystemMonitor />
-      </div>
-    </DashboardLayout>
-  )
+export default function RemovedSystemMonitorPage() {
+  notFound()
 }

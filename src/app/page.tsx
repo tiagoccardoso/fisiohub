@@ -315,6 +315,19 @@ export default function Dashboard() {
           {/* Setup Notice */}
           {isUsingMock && <SetupNotice />}
 
+          <Card className="border-primary/30 bg-primary/5 shadow-sm">
+            <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-3">
+                <div className="rounded-md bg-primary p-2 text-primary-foreground"><Stethoscope className="h-5 w-5" /></div>
+                <div>
+                  <h2 className="font-semibold">Perfis dos pacientes</h2>
+                  <p className="text-sm text-muted-foreground">Acesse cadastros, prontuarios e avaliacoes da sua clinica.</p>
+                </div>
+              </div>
+              <Button asChild className="shrink-0"><Link href="/patients">Acessar pacientes <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+            </CardContent>
+          </Card>
+
           {/* Error Message */}
           {error && (
             <Card className="border-red-200 bg-red-50">

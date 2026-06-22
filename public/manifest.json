@@ -1,6 +1,6 @@
 {
-  "name": "Manus Fisio - Sistema de Gestão Clínica",
-  "short_name": "Manus Fisio",
+  "name": "FisioHub - Sistema de Gestão Clínica",
+  "short_name": "FisioHub",
   "description": "Sistema integrado de gestão para clínica de fisioterapia com funcionalidades de mentoria, projetos e colaboração",
   "start_url": "/",
   "display": "standalone",
@@ -145,7 +145,7 @@
   },
   "protocol_handlers": [
     {
-      "protocol": "web+manusfisio",
+      "protocol": "web+fisiohub",
       "url": "/?handler=%s"
     }
   ]
