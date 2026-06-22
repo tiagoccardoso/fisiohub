@@ -2,10 +2,11 @@ import React from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PhysioAnalytics } from '@/components/ui/physio-analytics';
+import { AppPageShell } from '@/components/layouts/app-page-shell';
 // Se existir, importar AnalyticsDashboard para gráficos gerais
 // import AnalyticsDashboard from '@/components/ui/analytics-dashboard';
 
-export default function PhysioDashboardPage() {
+function PhysioDashboardPageContent() {
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">Painel de Fisioterapia</h1>
@@ -61,4 +62,8 @@ export default function PhysioDashboardPage() {
       </div>
     </div>
   );
-} 
+}
+
+export default function PhysioDashboardPage() {
+  return <AppPageShell><PhysioDashboardPageContent /></AppPageShell>;
+}

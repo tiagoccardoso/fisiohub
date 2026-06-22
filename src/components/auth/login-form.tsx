@@ -38,7 +38,7 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
       const timer = setTimeout(() => {
         router.replace('/')
       }, 600)
-      
+
       return () => clearTimeout(timer)
     }
     return () => {} // Return empty cleanup function when condition is not met
@@ -133,27 +133,29 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4 text-center">
-          <div className="flex items-center justify-center gap-2">
-            <Heart className="h-8 w-8 text-medical-500" />
-            <h1 className="text-2xl font-bold">FisioSys</h1>
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4 py-10 sm:px-6">
+      <Card className="w-full max-w-md border-border/80 px-1 py-3 shadow-clinical-lg sm:px-5 sm:py-6">
+        <CardHeader className="space-y-5 text-center">
+          <div className="flex flex-col items-center justify-center gap-3">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+              <Heart className="h-8 w-8 text-primary" aria-hidden="true" />
+            </div>
+            <h1 className="font-display text-3xl font-bold text-primary">FisioSys</h1>
           </div>
           <div>
-            <CardTitle className="text-xl">
+            <CardTitle className="text-xl text-foreground sm:text-2xl">
               {isSignUp ? 'Criar Conta' : 'Acesso ao Sistema'}
             </CardTitle>
             <CardDescription>
-              {isSignUp 
-                ? 'Crie sua conta para acessar o sistema' 
+              {isSignUp
+                ? 'Crie sua conta para acessar o sistema'
                 : 'Entre com suas credenciais para acessar o sistema de gestão clínica'
               }
             </CardDescription>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
@@ -169,7 +171,7 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
           <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
             {isSignUp && (
               <div className="space-y-2">
-                <label htmlFor="full_name" className="text-sm font-medium">
+                <label htmlFor="full_name" className="text-sm font-semibold">
                   Nome completo
                 </label>
                 <Input
@@ -184,29 +186,39 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
             )}
 
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-semibold">
                 E-mail
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute right-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="seuemail@empresa.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
+                  className="pr-11"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Senha
-              </label>
+              <div className="flex items-center justify-between gap-3">
+                <label htmlFor="password" className="text-sm font-semibold">Senha</label>
+                {!isSignUp && (
+                  <button
+                    type="button"
+                    className="text-sm font-semibold text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={handleForgotPassword}
+                    disabled={loading}
+                  >
+                    Esqueceu a senha?
+                  </button>
+                )}
+              </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Lock className="absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -220,7 +232,8 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                  className="absolute right-1 top-1/2 h-10 w-10 -translate-y-1/2"
+                  aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -235,7 +248,7 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
 
             {isSignUp && (
               <div className="space-y-2">
-                <label htmlFor="confirm_password" className="text-sm font-medium">
+                <label htmlFor="confirm_password" className="text-sm font-semibold">
                   Confirmar senha
                 </label>
                 <div className="relative">
@@ -256,28 +269,16 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
             <div className="space-y-3">
               <Button
                 type="submit"
-                className="w-full btn-medical"
+                className="w-full"
+                size="lg"
                 disabled={loading}
               >
-                {loading 
-                  ? (isSignUp ? 'Criando conta...' : 'Entrando...') 
+                {loading
+                  ? (isSignUp ? 'Criando conta...' : 'Entrando...')
                   : (isSignUp ? 'Criar Conta' : 'Entrar')
                 }
               </Button>
 
-              {!isSignUp && (
-                <div className="flex justify-between text-sm">
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="p-0 h-auto text-medical-600 hover:text-medical-700"
-                    onClick={handleForgotPassword}
-                    disabled={loading}
-                  >
-                    Esqueci minha senha
-                  </Button>
-                </div>
-              )}
             </div>
           </form>
 
@@ -286,7 +287,7 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
               <div className="w-full border-t border-muted" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
+              <span className="bg-white px-2 text-muted-foreground">
                 {isSignUp ? 'Já tem conta?' : 'Não tem conta?'}
               </span>
             </div>
@@ -306,7 +307,7 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
             {isSignUp ? 'Fazer Login' : 'Criar nova conta'}
           </Button>
 
-          <div className="text-center text-xs text-muted-foreground">
+          <div className="text-center text-xs leading-5 text-muted-foreground">
             <p>Sistema de Gestão Clínica</p>
             <p>Para fisioterapeutas e estagiários</p>
             <p className="mt-2 text-slate-500">
@@ -317,4 +318,4 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
       </Card>
     </div>
   )
-} 
+}

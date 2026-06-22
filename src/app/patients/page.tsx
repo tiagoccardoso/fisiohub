@@ -13,8 +13,9 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useDebounce } from '@/hooks/use-debounce';
 import { Patient } from '@/types/database.types';
+import { AppPageShell } from '@/components/layouts/app-page-shell';
 
-export default function PatientsPage() {
+function PatientsPageContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const { data: patients = [], isLoading, error } = usePatients(debouncedSearchTerm);
@@ -151,4 +152,8 @@ export default function PatientsPage() {
       </Card>
     </div>
   );
-} 
+}
+
+export default function PatientsPage() {
+  return <AppPageShell><PatientsPageContent /></AppPageShell>;
+}

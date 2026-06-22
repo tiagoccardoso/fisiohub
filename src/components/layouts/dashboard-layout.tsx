@@ -106,40 +106,41 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="app-shell flex min-h-screen bg-background">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         {/* Header */}
-        <header className="bg-slate-900 border-b border-slate-800 px-6 py-4">
-          <div className="flex items-center justify-between">
+        <header className="sticky top-0 z-30 border-b border-border/70 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
+          <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-3">
+            <div className="font-display text-base font-bold text-primary lg:hidden">FisioHub</div>
             {/* Search */}
-            <div className="flex-1 max-w-md">
+            <div className="hidden max-w-md flex-1 sm:block">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Pesquisar... (⌘K)"
-                  className="pl-10 bg-slate-800 border-slate-700 text-white placeholder-slate-400 cursor-pointer"
+                  className="min-h-10 cursor-pointer bg-surface-container-lowest pl-10 pr-20"
                   onClick={openSearch}
                   readOnly
                 />
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-                  <kbd className="px-1.5 py-0.5 bg-slate-700 text-slate-300 rounded text-xs">⌘</kbd>
-                  <kbd className="px-1.5 py-0.5 bg-slate-700 text-slate-300 rounded text-xs">K</kbd>
+                  <kbd className="rounded bg-surface-container px-1.5 py-0.5 text-xs text-muted-foreground">⌘</kbd>
+                  <kbd className="rounded bg-surface-container px-1.5 py-0.5 text-xs text-muted-foreground">K</kbd>
                 </div>
               </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 sm:gap-2">
               {/* Keyboard Shortcuts */}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={openShortcuts}
-                className="text-slate-300 hover:text-white hover:bg-slate-800"
+                className="hidden text-muted-foreground md:inline-flex"
                 title="Atalhos de teclado (?)"
               >
                 <Keyboard className="h-5 w-5" />
@@ -150,7 +151,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 variant="ghost"
                 size="icon"
                 onClick={() => router.push('/settings')}
-                className="text-slate-300 hover:text-white hover:bg-slate-800"
+                className="text-muted-foreground"
               >
                 <Settings className="h-5 w-5" />
               </Button>
@@ -160,29 +161,29 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 <Button
                   variant="ghost"
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-800"
+                  className="flex items-center gap-2 px-1.5 text-foreground sm:px-3"
                 >
                   <div className="h-8 w-8 rounded-full bg-medical-500 flex items-center justify-center">
                     <User className="h-4 w-4 text-white" />
                   </div>
-                  <span className="text-sm font-medium">
+                  <span className="hidden max-w-32 truncate text-sm font-medium sm:block">
                     {(user as any)?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário'}
                   </span>
-                  <ChevronDown className="h-4 w-4" />
+                  <ChevronDown className="hidden h-4 w-4 sm:block" />
                 </Button>
 
                 {/* User Dropdown */}
                 {showUserMenu && (
-                  <Card className="absolute right-0 top-full mt-2 w-48 z-50 bg-slate-900 border-slate-700">
+                  <Card className="absolute right-0 top-full z-50 mt-2 w-56 shadow-clinical-lg">
                     <CardContent className="p-2">
                       <div className="space-y-1">
-                        <div className="px-3 py-2 text-sm text-slate-400">
+                        <div className="truncate px-3 py-2 text-sm text-muted-foreground">
                           {user?.email}
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800"
+                          className="w-full justify-start"
                         >
                           <User className="h-4 w-4 mr-2" />
                           Perfil
@@ -191,17 +192,17 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => router.push('/settings')}
-                          className="w-full justify-start text-slate-300 hover:text-white hover:bg-slate-800"
+                          className="w-full justify-start"
                         >
                           <Settings className="h-4 w-4 mr-2" />
                           Configurações
                         </Button>
-                        <hr className="my-1 border-slate-700" />
+                        <hr className="my-1 border-border" />
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={signOut}
-                          className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-950"
+                          className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
                         >
                           <LogOut className="h-4 w-4 mr-2" />
                           Sair
@@ -216,8 +217,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-auto p-6">
-          {children}
+        <main className="flex-1 overflow-x-hidden px-4 py-5 pb-24 sm:px-6 sm:py-6 lg:pb-8">
+          <div className="mx-auto w-full max-w-[1440px]">{children}</div>
         </main>
       </div>
 

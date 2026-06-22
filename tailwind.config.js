@@ -17,26 +17,31 @@ module.exports = {
     },
     extend: {
       colors: {
-        // Dark Mode Profissional - Paleta Principal
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))", // #0f172a - slate-900
-        foreground: "hsl(var(--foreground))", // #f8fafc - slate-50
-        
+        outline: "hsl(var(--outline))",
+        "outline-variant": "hsl(var(--outline-variant))",
+        "surface-container-lowest": "hsl(var(--surface-container-lowest))",
+        "surface-container-low": "hsl(var(--surface-container-low))",
+        "surface-container": "hsl(var(--surface-container))",
+        "surface-container-high": "hsl(var(--surface-container-high))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+
         // Superfícies
         surface: {
           DEFAULT: "hsl(var(--surface))", // #1e293b - slate-800
           hover: "hsl(var(--surface-hover))", // #334155 - slate-700
         },
-        
+
         // Cores Primárias
         primary: {
           DEFAULT: "hsl(var(--primary))", // #3b82f6 - blue-500
           foreground: "hsl(var(--primary-foreground))",
           hover: "hsl(var(--primary-hover))", // #2563eb - blue-600
         },
-        
+
         // Cores de Status
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -54,13 +59,13 @@ module.exports = {
           DEFAULT: "hsl(var(--warning))", // #f59e0b - amber-500
           foreground: "hsl(var(--warning-foreground))",
         },
-        
+
         // Cores de Texto
         text: {
           primary: "hsl(var(--text-primary))", // #f8fafc - slate-50
           secondary: "hsl(var(--text-secondary))", // #cbd5e1 - slate-300
         },
-        
+
         // Componentes UI
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -80,18 +85,20 @@ module.exports = {
         },
         // Physiotherapy specific colors
         medical: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+          50: '#f4faff',
+          100: '#e7f6ff',
+          200: '#d5e5ef',
+          300: '#a8edff',
+          400: '#89d1e3',
+          500: '#0e6878',
+          600: '#00515e',
+          700: '#004e5b',
+          800: '#003b46',
+          900: '#002a32',
         },
         success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
           50: '#ecfdf5',
           100: '#d1fae5',
           200: '#a7f3d0',
@@ -104,6 +111,8 @@ module.exports = {
           900: '#064e3b',
         },
         warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
           50: '#fffbeb',
           100: '#fef3c7',
           200: '#fde68a',
@@ -135,6 +144,7 @@ module.exports = {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Montserrat', 'Inter', 'system-ui', 'sans-serif'],
       },
       keyframes: {
         "accordion-down": {
@@ -172,6 +182,8 @@ module.exports = {
         '2xs': ['0.625rem', { lineHeight: '0.75rem' }],
       },
       boxShadow: {
+        'clinical': '0 4px 20px rgba(14, 29, 37, 0.06)',
+        'clinical-lg': '0 12px 32px rgba(14, 29, 37, 0.10)',
         'glow': '0 0 20px rgba(59, 130, 246, 0.5)',
         'glow-medical': '0 0 20px rgba(14, 165, 233, 0.5)',
         'glow-success': '0 0 20px rgba(34, 197, 94, 0.5)',
@@ -240,7 +252,7 @@ module.exports = {
     },
   },
   plugins: [
-    require("tailwindcss-animate"), 
+    require("tailwindcss-animate"),
     require("@tailwindcss/typography"),
     // Plugin personalizado para utilitários do design system
     function({ addUtilities, theme }) {
@@ -284,8 +296,8 @@ module.exports = {
           },
         },
       }
-      
+
       addUtilities(newUtilities)
     }
   ],
-} 
+}

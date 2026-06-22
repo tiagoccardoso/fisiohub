@@ -19,7 +19,7 @@ export interface EnhancedModalProps {
 
 const sizeClasses = {
   sm: "max-w-md",
-  md: "max-w-lg", 
+  md: "max-w-lg",
   lg: "max-w-2xl",
   xl: "max-w-4xl",
   full: "max-w-7xl"
@@ -89,7 +89,7 @@ export function EnhancedModal({
       onClick={handleBackdropClick}
     >
       {/* Backdrop */}
-      <div 
+      <div
         className={cn(
           "absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300",
           isVisible ? "opacity-100" : "opacity-0"
@@ -99,9 +99,9 @@ export function EnhancedModal({
       {/* Modal */}
       <div
         className={cn(
-          "relative w-full bg-background border border-border rounded-xl shadow-2xl transition-all duration-300 max-h-[90vh] overflow-hidden",
+          "relative max-h-[calc(100dvh-2rem)] w-full overflow-hidden rounded-2xl border border-border bg-white shadow-clinical-lg transition-all duration-300",
           sizeClasses[size],
-          isVisible ? "scale-100 translate-y-0" : "scale-95 translate-y-4",
+          isVisible ? "scale-100 translate-y-0" : "scale-[0.98] translate-y-2",
           className
         )}
         role="dialog"
@@ -114,7 +114,7 @@ export function EnhancedModal({
           <div className="flex items-center justify-between p-6 border-b border-border">
             <div className="flex-1">
               {title && (
-                <h2 id="modal-title" className="text-lg font-semibold text-foreground">
+                <h2 id="modal-title" className="font-display text-xl font-semibold text-primary">
                   {title}
                 </h2>
               )}
@@ -149,12 +149,12 @@ export function EnhancedModal({
 }
 
 // Modal Content Components
-export function EnhancedModalContent({ 
-  children, 
-  className 
-}: { 
+export function EnhancedModalContent({
+  children,
+  className
+}: {
   children: React.ReactNode
-  className?: string 
+  className?: string
 }) {
   return (
     <div className={cn("p-6", className)}>
@@ -163,15 +163,15 @@ export function EnhancedModalContent({
   )
 }
 
-export function EnhancedModalFooter({ 
-  children, 
-  className 
-}: { 
+export function EnhancedModalFooter({
+  children,
+  className
+}: {
   children: React.ReactNode
-  className?: string 
+  className?: string
 }) {
   return (
-    <div className={cn("flex items-center justify-end gap-3 p-6 border-t border-border bg-muted/30", className)}>
+    <div className={cn("flex flex-col-reverse items-stretch justify-end gap-3 border-t border-border bg-muted/30 p-5 sm:flex-row sm:items-center sm:p-6", className)}>
       {children}
     </div>
   )
@@ -228,4 +228,4 @@ export function ConfirmationModal({
       </EnhancedModalFooter>
     </EnhancedModal>
   )
-} 
+}

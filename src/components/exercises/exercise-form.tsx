@@ -33,7 +33,7 @@ interface ExerciseFormProps {
 
 const categories = [
   'Fortalecimento',
-  'Mobilidade', 
+  'Mobilidade',
   'Alongamento',
   'Estabilização',
   'Coordenação',
@@ -42,7 +42,7 @@ const categories = [
 ]
 
 const anatomicalRegions = [
-  'Cervical', 
+  'Cervical',
   'Membros Superiores',
   'Tronco',
   'Membros Inferiores',
@@ -76,7 +76,7 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!formData.name.trim()) {
       toast.error('Nome do exercício é obrigatório')
       return
@@ -93,16 +93,16 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
     }
 
     setIsSubmitting(true)
-    
+
     try {
       // Simular salvamento
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       onSave({
         ...formData,
         id: exercise?.id || Date.now().toString()
       })
-      
+
       toast.success(exercise ? 'Exercício atualizado!' : 'Exercício criado!')
     } catch (error) {
       toast.error('Erro ao salvar exercício')
@@ -116,15 +116,15 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <Button variant="outline" size="sm" onClick={onCancel}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
         </Button>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1>
             {exercise ? 'Editar Exercício' : 'Novo Exercício'}
           </h1>
           <p className="text-muted-foreground">
@@ -141,8 +141,8 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Informações Básicas</h3>
-              
+              <h3 className="text-primary">Informações Básicas</h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome do Exercício *</Label>
@@ -183,13 +183,13 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
 
             {/* Categorization */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Classificação</h3>
-              
+              <h3 className="text-primary">Classificação</h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="anatomical_region">Região Anatômica *</Label>
-                  <Select 
-                    value={formData.anatomical_region} 
+                  <Select
+                    value={formData.anatomical_region}
                     onValueChange={(value) => handleChange('anatomical_region', value)}
                   >
                     <SelectTrigger>
@@ -207,8 +207,8 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
 
                 <div className="space-y-2">
                   <Label htmlFor="category">Categoria *</Label>
-                  <Select 
-                    value={formData.category} 
+                  <Select
+                    value={formData.category}
                     onValueChange={(value) => handleChange('category', value)}
                   >
                     <SelectTrigger>
@@ -228,8 +228,8 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="difficulty">Nível de Dificuldade *</Label>
-                  <Select 
-                    value={formData.difficulty_level.toString()} 
+                  <Select
+                    value={formData.difficulty_level.toString()}
                     onValueChange={(value) => handleChange('difficulty_level', parseInt(value))}
                   >
                     <SelectTrigger>
@@ -264,8 +264,8 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
 
             {/* Clinical Information */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Informações Clínicas</h3>
-              
+              <h3 className="text-primary">Informações Clínicas</h3>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="indications">Indicações</Label>
@@ -295,8 +295,8 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
 
             {/* Media */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Mídia</h3>
-              
+              <h3 className="text-primary">Mídia</h3>
+
               <div className="space-y-2">
                 <Label htmlFor="video_url">URL do Vídeo Demonstrativo</Label>
                 <Input
@@ -313,10 +313,10 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
             </div>
 
             {/* Actions */}
-            <div className="flex gap-4 pt-6">
-              <Button 
-                type="submit" 
-                disabled={isSubmitting} 
+            <div className="flex flex-col-reverse gap-3 border-t border-border pt-6 sm:flex-row">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
                 className="flex-1"
               >
                 {isSubmitting ? (
@@ -331,10 +331,10 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
                   </>
                 )}
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={onCancel} 
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onCancel}
                 className="flex-1"
                 disabled={isSubmitting}
               >
@@ -346,4 +346,4 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
       </Card>
     </div>
   )
-} 
+}

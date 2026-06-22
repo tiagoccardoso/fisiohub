@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import AnalyticsDashboard from './_components/analytics-dashboard';
+import { AppPageShell } from '@/components/layouts/app-page-shell';
 
 export const metadata: Metadata = {
   title: 'Análises e Relatórios - FisioSys',
@@ -10,5 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function AnalyticsPage() {
-  return <AnalyticsDashboard />;
-} 
+  return <AppPageShell><AnalyticsDashboard /></AppPageShell>;
+}

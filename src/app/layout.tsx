@@ -59,13 +59,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
   viewportFit: 'cover',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
-    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
-  ],
+  themeColor: '#f4faff',
 }
 
 export default function RootLayout({
@@ -87,8 +84,8 @@ export default function RootLayout({
   }
 
   return (
-    <html lang="pt-BR" className="dark">
-      <body className="font-sans antialiased">
+    <html lang="pt-BR">
+      <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -97,4 +94,4 @@ export default function RootLayout({
       </body>
     </html>
   )
-} 
+}

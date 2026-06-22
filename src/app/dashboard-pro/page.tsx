@@ -10,10 +10,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { AnalyticsDashboard } from '@/components/ui/analytics-dashboard'
 import { useAuth } from '@/hooks/use-auth-fixed'
-import { 
-  BookOpen, 
-  Users, 
-  FolderKanban, 
+import {
+  BookOpen,
+  Users,
+  FolderKanban,
   Calendar,
   Crown,
   Sparkles,
@@ -83,7 +83,7 @@ export default function DashboardPro() {
       <DashboardLayout>
         <div className="space-y-8">
           {/* Header */}
-          <div className="relative p-6 border border-primary/10 rounded-lg bg-gradient-to-r from-primary/5 to-blue-500/5">
+          <div className="relative rounded-xl border border-primary/10 bg-primary/5 p-6">
             <div className="flex items-center justify-between">
               <div>
                 <Button
@@ -98,7 +98,7 @@ export default function DashboardPro() {
                 <h1 className="text-3xl font-bold flex items-center gap-3">
                   <Crown className="h-8 w-8 text-primary" />
                   FisioSys Pro
-                  <Badge className="bg-gradient-to-r from-primary to-blue-600">
+                  <Badge>
                     <Sparkles className="h-3 w-3 mr-1" />
                     Avançado
                   </Badge>
@@ -108,7 +108,7 @@ export default function DashboardPro() {
                   Painel com IA e funcionalidades avançadas para {user?.full_name?.split(' ')[0] || 'Usuário'}
                 </p>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <Button
                   onClick={() => setShowModal('search')}
@@ -118,7 +118,7 @@ export default function DashboardPro() {
                   <Search className="h-4 w-4 mr-2" />
                   Busca IA
                 </Button>
-                
+
                 <Button
                   onClick={() => setShowModal('notifications')}
                   variant="outline"
@@ -128,12 +128,12 @@ export default function DashboardPro() {
                   Notificações
                   <Badge variant="destructive" className="ml-2 h-4 w-4 p-0 text-xs">3</Badge>
                 </Button>
-                
+
                 <Button
                   onClick={() => setShowModal('assistant')}
                   variant="default"
                   size="sm"
-                  className="bg-gradient-to-r from-primary to-blue-600"
+                  className="bg-primary"
                 >
                   <Bot className="h-4 w-4 mr-2" />
                   IA Assistant
@@ -143,7 +143,7 @@ export default function DashboardPro() {
           </div>
 
           {/* AI Insights */}
-          <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-blue-500/5">
+          <Card className="border-primary/20 bg-primary/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Brain className="h-5 w-5 text-primary" />
@@ -181,7 +181,7 @@ export default function DashboardPro() {
 
           {/* Enhanced Stats */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900">
+            <Card className="border-primary/15 bg-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center justify-between">
                   Cadernos IA
@@ -194,7 +194,7 @@ export default function DashboardPro() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900">
+            <Card className="border-primary/15 bg-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center justify-between">
                   Projetos Auto
@@ -207,7 +207,7 @@ export default function DashboardPro() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900">
+            <Card className="border-primary/15 bg-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center justify-between">
                   Mentorias IA
@@ -220,7 +220,7 @@ export default function DashboardPro() {
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900">
+            <Card className="border-primary/15 bg-white">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center justify-between">
                   LGPD Score
@@ -306,13 +306,13 @@ export default function DashboardPro() {
               <CardContent>
                 {showModal === 'search' && (
                   <p className="text-muted-foreground">
-                    Sistema de busca inteligente que compreende contexto e intenção. 
+                    Sistema de busca inteligente que compreende contexto e intenção.
                     Encontre protocolos, projetos e informações usando linguagem natural.
                   </p>
                 )}
                 {showModal === 'notifications' && (
                   <p className="text-muted-foreground">
-                    Sistema de notificações que aprende seus padrões e prioriza automaticamente 
+                    Sistema de notificações que aprende seus padrões e prioriza automaticamente
                     as informações mais relevantes para você.
                   </p>
                 )}
@@ -329,4 +329,4 @@ export default function DashboardPro() {
       </DashboardLayout>
     </AuthGuard>
   )
-} 
+}

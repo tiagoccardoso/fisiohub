@@ -33,13 +33,13 @@ export function AuthGuard({ children, requireRole, fallback }: AuthGuardProps) {
 
   if (requireRole && !requireRole.includes(user.role ?? '')) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-        <div className="text-center space-y-4">
-          <h2 className="text-xl font-semibold text-white">Acesso Negado</h2>
-          <p className="text-slate-400">
+      <div className="flex min-h-dvh items-center justify-center bg-background p-4">
+        <div className="w-full max-w-md space-y-4 rounded-2xl border border-destructive/20 bg-white p-6 text-center shadow-clinical">
+          <h2 className="font-display text-xl font-semibold text-destructive">Acesso Negado</h2>
+          <p className="text-muted-foreground">
             Você não tem permissão para acessar esta página.
           </p>
-          <p className="text-slate-500 text-sm">
+          <p className="text-sm text-muted-foreground">
             Seu nível de acesso: {user.role}
           </p>
         </div>
@@ -48,4 +48,4 @@ export function AuthGuard({ children, requireRole, fallback }: AuthGuardProps) {
   }
 
   return <>{children}</>
-} 
+}

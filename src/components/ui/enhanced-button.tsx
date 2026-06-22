@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
 
 const enhancedButtonVariants = cva(
-  "relative inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 overflow-hidden group",
+  "group relative inline-flex min-w-0 items-center justify-center overflow-hidden whitespace-normal rounded-lg text-center text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -15,15 +15,15 @@ const enhancedButtonVariants = cva(
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-sm hover:shadow-md",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        medical: "bg-gradient-to-r from-medical-500 to-medical-600 text-white hover:from-medical-600 hover:to-medical-700 shadow-lg hover:shadow-xl active:shadow-md",
-        success: "bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:from-emerald-600 hover:to-emerald-700 shadow-lg hover:shadow-xl",
-        warning: "bg-gradient-to-r from-amber-500 to-amber-600 text-white hover:from-amber-600 hover:to-amber-700 shadow-lg hover:shadow-xl",
-        error: "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl",
+        medical: "bg-primary text-white shadow-sm hover:bg-primary/90 hover:shadow-md",
+        success: "bg-success-600 text-white shadow-sm hover:bg-success-700",
+        warning: "bg-warning-600 text-white shadow-sm hover:bg-warning-700",
+        error: "bg-error-600 text-white shadow-sm hover:bg-error-700",
         glass: "bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
+        default: "min-h-11 px-4 py-2.5",
+        sm: "min-h-9 rounded-lg px-3 py-2 text-xs",
         lg: "h-12 rounded-lg px-8 text-base",
         xl: "h-14 rounded-xl px-10 text-lg",
         icon: "h-10 w-10",
@@ -34,7 +34,7 @@ const enhancedButtonVariants = cva(
         none: "",
         bounce: "hover:animate-bounce-gentle",
         pulse: "hover:animate-pulse-slow",
-        scale: "hover:scale-105 active:scale-95",
+        scale: "active:scale-[0.98]",
         slide: "hover:translate-x-1",
       }
     },
@@ -58,12 +58,12 @@ export interface EnhancedButtonProps
 }
 
 const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(
-  ({ 
-    className, 
-    variant, 
-    size, 
+  ({
+    className,
+    variant,
+    size,
     animation,
-    asChild = false, 
+    asChild = false,
     loading = false,
     loadingText,
     leftIcon,
@@ -72,14 +72,14 @@ const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(
     children,
     onClick,
     disabled,
-    ...props 
+    ...props
   }, ref) => {
     const [ripples, setRipples] = React.useState<Array<{ id: number; x: number; y: number }>>([])
     const buttonRef = React.useRef<HTMLButtonElement>(null)
 
     const createRipple = (event: React.MouseEvent<HTMLButtonElement>) => {
       if (!ripple || disabled || loading) return
-      
+
       const button = buttonRef.current
       if (!button) return
 
@@ -109,7 +109,7 @@ const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(
     }
 
     const Comp = asChild ? Slot : "button"
-    
+
     return (
       <Comp
         className={cn(
@@ -157,10 +157,6 @@ const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(
           {rightIcon && <span className="flex-shrink-0">{rightIcon}</span>}
         </div>
 
-        {/* Shine Effect for Gradient Buttons */}
-        {(variant === 'medical' || variant === 'success' || variant === 'warning' || variant === 'error') && (
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out" />
-        )}
       </Comp>
     )
   }
@@ -168,4 +164,4 @@ const EnhancedButton = React.forwardRef<HTMLButtonElement, EnhancedButtonProps>(
 
 EnhancedButton.displayName = "EnhancedButton"
 
-export { EnhancedButton, enhancedButtonVariants } 
+export { EnhancedButton, enhancedButtonVariants }

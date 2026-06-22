@@ -3,12 +3,12 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Heart, 
-  Users, 
-  Calendar, 
-  BookOpen, 
-  FolderKanban, 
+import {
+  Heart,
+  Users,
+  Calendar,
+  BookOpen,
+  FolderKanban,
   Settings,
   ArrowRight,
   Shield,
@@ -19,21 +19,21 @@ import Link from 'next/link'
 
 export default function PublicPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
+      <header className="sticky top-0 z-30 border-b border-border bg-white/95 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Heart className="h-8 w-8 text-blue-500" />
-              <h1 className="text-2xl font-bold text-white">FisioSys</h1>
+              <Heart className="h-8 w-8 text-primary" />
+              <h1 className="font-display text-2xl font-bold text-primary">FisioSys</h1>
             </div>
             <div className="flex items-center space-x-4">
               <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">
                 ✅ Sistema Online
               </Badge>
               <Link href="/auth/login">
-                <Button className="bg-blue-600 hover:bg-blue-700">
+                <Button>
                   Entrar no Sistema
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -46,22 +46,22 @@ export default function PublicPage() {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
-          <h2 className="text-5xl font-bold text-white mb-6">
+          <h2 className="mb-6 font-display text-3xl font-bold sm:text-4xl lg:text-5xl">
             Sistema de Gestão Integrado
-            <span className="block text-blue-400 mt-2">para Clínica de Fisioterapia</span>
+            <span className="mt-2 block text-primary">para Clínica de Fisioterapia</span>
           </h2>
-          <p className="text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
-            Plataforma completa para gestão de mentoria, projetos e colaboração em clínicas de fisioterapia. 
+          <p className="mx-auto mb-8 max-w-3xl text-lg text-muted-foreground sm:text-xl">
+            Plataforma completa para gestão de mentoria, projetos e colaboração em clínicas de fisioterapia.
             Desenvolvido com Next.js, TypeScript e Neon PostgreSQL.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/login">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+              <Button size="lg">
                 Acessar Sistema
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-800">
+            <Button size="lg" variant="outline">
               Saber Mais
             </Button>
           </div>
@@ -71,65 +71,65 @@ export default function PublicPage() {
       {/* Features */}
       <section className="py-16 px-4">
         <div className="container mx-auto">
-          <h3 className="text-3xl font-bold text-white text-center mb-12">
+          <h3 className="mb-12 text-center font-display text-3xl font-bold">
             Funcionalidades Principais
           </h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card>
               <CardHeader>
                 <BookOpen className="h-8 w-8 text-blue-500 mb-2" />
-                <CardTitle className="text-white">Sistema de Cadernos</CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardTitle>Sistema de Cadernos</CardTitle>
+                <CardDescription>
                   Editor rico para documentação e anotações clínicas
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card>
               <CardHeader>
                 <FolderKanban className="h-8 w-8 text-green-500 mb-2" />
-                <CardTitle className="text-white">Gestão de Projetos</CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardTitle>Gestão de Projetos</CardTitle>
+                <CardDescription>
                   Kanban board para organização de tarefas e projetos
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card>
               <CardHeader>
                 <Users className="h-8 w-8 text-purple-500 mb-2" />
-                <CardTitle className="text-white">Gestão de Equipe</CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardTitle>Gestão de Equipe</CardTitle>
+                <CardDescription>
                   Controle de mentores, estagiários e colaboradores
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card>
               <CardHeader>
                 <Calendar className="h-8 w-8 text-orange-500 mb-2" />
-                <CardTitle className="text-white">Calendário</CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardTitle>Calendário</CardTitle>
+                <CardDescription>
                   Agendamento de supervisões e eventos
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card>
               <CardHeader>
                 <Shield className="h-8 w-8 text-red-500 mb-2" />
-                <CardTitle className="text-white">Segurança LGPD</CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardTitle>Segurança LGPD</CardTitle>
+                <CardDescription>
                   Conformidade com regulamentações de privacidade
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card>
               <CardHeader>
                 <Settings className="h-8 w-8 text-cyan-500 mb-2" />
-                <CardTitle className="text-white">Configurações</CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardTitle>Configurações</CardTitle>
+                <CardDescription>
                   Personalização completa do sistema
                 </CardDescription>
               </CardHeader>
@@ -139,37 +139,37 @@ export default function PublicPage() {
       </section>
 
       {/* Tech Stack */}
-      <section className="py-16 px-4 bg-slate-800/30">
+      <section className="bg-surface-container-low py-16 px-4">
         <div className="container mx-auto">
-          <h3 className="text-3xl font-bold text-white text-center mb-12">
+          <h3 className="mb-12 text-center font-display text-3xl font-bold">
             Tecnologias Utilizadas
           </h3>
           <div className="grid md:grid-cols-3 gap-6">
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card>
               <CardHeader className="text-center">
                 <Zap className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                <CardTitle className="text-white">Frontend Moderno</CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardTitle>Frontend Moderno</CardTitle>
+                <CardDescription>
                   Next.js 14, TypeScript, Tailwind CSS, Radix UI
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card>
               <CardHeader className="text-center">
                 <Globe className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-                <CardTitle className="text-white">Backend Robusto</CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardTitle>Backend Robusto</CardTitle>
+                <CardDescription>
                   Neon PostgreSQL, autenticação segura e APIs server-side
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card>
               <CardHeader className="text-center">
                 <Shield className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                <CardTitle className="text-white">Deploy Seguro</CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardTitle>Deploy Seguro</CardTitle>
+                <CardDescription>
                   Vercel, SSL/HTTPS, PWA, Deploy Automático
                 </CardDescription>
               </CardHeader>
@@ -184,26 +184,26 @@ export default function PublicPage() {
           <div className="grid md:grid-cols-4 gap-6 text-center">
             <div>
               <div className="text-4xl font-bold text-blue-500 mb-2">100%</div>
-              <div className="text-slate-400">Funcional</div>
+              <div className="text-muted-foreground">Funcional</div>
             </div>
             <div>
               <div className="text-4xl font-bold text-green-500 mb-2">12</div>
-              <div className="text-slate-400">Páginas</div>
+              <div className="text-muted-foreground">Páginas</div>
             </div>
             <div>
               <div className="text-4xl font-bold text-purple-500 mb-2">PWA</div>
-              <div className="text-slate-400">Instalável</div>
+              <div className="text-muted-foreground">Instalável</div>
             </div>
             <div>
               <div className="text-4xl font-bold text-orange-500 mb-2">24/7</div>
-              <div className="text-slate-400">Online</div>
+              <div className="text-muted-foreground">Online</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 bg-gradient-to-r from-blue-600 to-purple-600">
+      <section className="bg-primary py-20 px-4 text-white">
         <div className="container mx-auto text-center">
           <h3 className="text-3xl font-bold text-white mb-6">
             Pronto para começar?
@@ -221,13 +221,13 @@ export default function PublicPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 py-8 px-4 border-t border-slate-800">
+      <footer className="border-t border-border bg-white py-8 px-4">
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
             <Heart className="h-6 w-6 text-blue-500" />
-            <span className="text-white font-semibold">FisioSys</span>
+            <span className="font-semibold text-primary">FisioSys</span>
           </div>
-          <p className="text-slate-400 text-sm">
+          <p className="text-sm text-muted-foreground">
             Sistema de Gestão Integrado para Clínica de Fisioterapia
           </p>
           <p className="text-slate-500 text-xs mt-2">
@@ -237,4 +237,4 @@ export default function PublicPage() {
       </footer>
     </div>
   )
-} 
+}

@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useAuth } from '@/hooks/use-auth-fixed'
 import { supabase } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { ArrowLeft, Calendar, Save, Clock, MapPin, Users } from 'lucide-react'
+import { ArrowLeft, Calendar, Save, Clock, MapPin, Info } from 'lucide-react'
 
 interface EventFormData {
   title: string
@@ -51,7 +51,7 @@ export default function NewEvent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!user) {
       toast.error('Você precisa estar logado para criar um evento')
       return
@@ -135,7 +135,7 @@ export default function NewEvent() {
     const now = new Date()
     const start = new Date(now)
     start.setMinutes(0, 0, 0) // Arredondar para a hora cheia
-    
+
     const end = new Date(start)
     end.setHours(end.getHours() + 1) // 1 hora de duração padrão
 
@@ -156,9 +156,9 @@ export default function NewEvent() {
   return (
     <AuthGuard>
       <DashboardLayout>
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mx-auto max-w-4xl space-y-6">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
@@ -169,15 +169,15 @@ export default function NewEvent() {
               Voltar
             </Button>
             <div className="flex items-center gap-3">
-              <Calendar className="h-6 w-6 text-purple-500" />
-              <h1 className="text-2xl font-bold">Criar Novo Evento</h1>
+              <Calendar className="h-6 w-6 text-primary" />
+              <h1>Criar Novo Evento</h1>
             </div>
           </div>
 
           {/* Form */}
           <Card>
             <CardHeader>
-              <CardTitle>Informações do Evento</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Calendar className="h-5 w-5" />Informações do Evento</CardTitle>
               <CardDescription>
                 Agende consultas, sessões de fisioterapia, reuniões e outros eventos importantes.
               </CardDescription>
@@ -282,13 +282,13 @@ export default function NewEvent() {
 
                 {/* Duração Calculada */}
                 {formData.start_time && formData.end_time && (
-                  <div className="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg">
-                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="rounded-xl bg-surface-container-low p-4">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="h-4 w-4" />
                       <span>
                         Duração: {
                           Math.round(
-                            (new Date(formData.end_time).getTime() - new Date(formData.start_time).getTime()) 
+                            (new Date(formData.end_time).getTime() - new Date(formData.start_time).getTime())
                             / (1000 * 60)
                           )
                         } minutos
@@ -298,11 +298,11 @@ export default function NewEvent() {
                 )}
 
                 {/* Informações de Agendamento */}
-                <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
-                  <h3 className="font-medium text-green-900 dark:text-green-100 mb-2">
-                    📅 Lembrete
+                <div className="rounded-xl border border-primary/15 bg-primary/5 p-4">
+                  <h3 className="mb-2 flex items-center gap-2 text-base font-semibold text-primary">
+                    <Info className="h-5 w-5" /> Lembrete
                   </h3>
-                  <ul className="text-sm text-green-800 dark:text-green-200 space-y-1">
+                  <ul className="space-y-1 text-sm text-muted-foreground">
                     <li>• O evento será visível no seu calendário pessoal</li>
                     <li>• Você pode editar ou cancelar o evento a qualquer momento</li>
                     <li>• Notificações serão enviadas próximo ao horário do evento</li>
@@ -311,11 +311,11 @@ export default function NewEvent() {
                 </div>
 
                 {/* Botões */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:items-center">
                   <Button
                     type="submit"
                     disabled={isLoading || !formData.title.trim() || !formData.start_time || !formData.end_time}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 sm:order-3 sm:ml-auto"
                   >
                     <Save className="h-4 w-4" />
                     {isLoading ? 'Criando...' : 'Criar Evento'}
@@ -333,7 +333,7 @@ export default function NewEvent() {
                     variant="outline"
                     onClick={setDefaultTimes}
                     disabled={isLoading}
-                    className="ml-auto"
+                    className="sm:order-2"
                   >
                     <Clock className="h-4 w-4 mr-2" />
                     Agora

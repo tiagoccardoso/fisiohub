@@ -11,8 +11,9 @@ import YouTubeVideoPlayer, { CompactYouTubePlayer } from '@/components/ui/youtub
 import YouTubeService, { YouTubeVideo } from '@/services/youtube-service';
 import { Play, Search, Youtube, TestTube, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { AppPageShell } from '@/components/layouts/app-page-shell';
 
-export default function YouTubeTestPage() {
+function YouTubeTestPageContent() {
   const [testResults, setTestResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<YouTubeVideo | null>(null);
@@ -23,7 +24,7 @@ export default function YouTubeTestPage() {
   const runTests = async () => {
     setIsLoading(true);
     setTestResults([]);
-    
+
     const tests = [
       {
         name: 'Verificar Configuração da API',
@@ -31,8 +32,8 @@ export default function YouTubeTestPage() {
           const hasApiKey = !!process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
           return {
             success: hasApiKey,
-            message: hasApiKey 
-              ? 'API Key configurada' 
+            message: hasApiKey
+              ? 'API Key configurada'
               : 'API Key não encontrada - usando dados mock'
           };
         }
@@ -84,14 +85,14 @@ export default function YouTubeTestPage() {
             'https://youtu.be/dQw4w9WgXcQ',
             'https://example.com/video'
           ];
-          
+
           const results = testUrls.map(url => ({
             url,
             isValid: YouTubeService.isYouTubeUrl(url)
           }));
-          
+
           const validCount = results.filter(r => r.isValid).length;
-          
+
           return {
             success: validCount === 2, // Primeiras 2 devem ser válidas
             message: `${validCount}/3 URLs validadas corretamente`,
@@ -112,7 +113,7 @@ export default function YouTubeTestPage() {
               expectedId: 'oHg5SJYRHA0'
             }
           ];
-          
+
           const results = testCases.map(({ url, expectedId }) => {
             const extractedId = YouTubeService.extractVideoId(url);
             return {
@@ -122,9 +123,9 @@ export default function YouTubeTestPage() {
               success: extractedId === expectedId
             };
           });
-          
+
           const successCount = results.filter(r => r.success).length;
-          
+
           return {
             success: successCount === testCases.length,
             message: `${successCount}/${testCases.length} IDs extraídos corretamente`,
@@ -142,7 +143,7 @@ export default function YouTubeTestPage() {
           ...result,
           timestamp: new Date().toLocaleTimeString()
         }]);
-        
+
         // Pequena pausa entre testes
         await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
@@ -154,7 +155,7 @@ export default function YouTubeTestPage() {
         }]);
       }
     }
-    
+
     setIsLoading(false);
     toast.success('Testes concluídos!');
   };
@@ -162,13 +163,13 @@ export default function YouTubeTestPage() {
   // Buscar vídeos personalizados
   const handleCustomSearch = async () => {
     if (!searchQuery.trim()) return;
-    
+
     try {
       const videos = await YouTubeService.searchVideos({
         query: searchQuery,
         maxResults: 8
       });
-      
+
       if (videos.length > 0) {
         setSelectedVideo(videos[0] || null);
         toast.success(`${videos.length} vídeos encontrados`);
@@ -183,9 +184,9 @@ export default function YouTubeTestPage() {
   // Testar vídeo específico
   const testCustomVideo = () => {
     if (!customVideoId.trim()) return;
-    
+
     const videoId = YouTubeService.extractVideoId(customVideoId) || customVideoId;
-    
+
     setSelectedVideo({
       id: videoId,
       title: 'Vídeo de Teste',
@@ -194,7 +195,7 @@ export default function YouTubeTestPage() {
       channelTitle: 'Canal de Teste',
       publishedAt: new Date().toISOString()
     });
-    
+
     toast.success('Vídeo carregado para teste');
   };
 
@@ -310,7 +311,7 @@ export default function YouTubeTestPage() {
                   showControls={true}
                   showInfo={true}
                 />
-                
+
                 <div className="text-sm space-y-1">
                   <p><strong>ID:</strong> {selectedVideo.id}</p>
                   <p><strong>Canal:</strong> {selectedVideo.channelTitle}</p>
@@ -354,7 +355,7 @@ export default function YouTubeTestPage() {
               <li>Gere uma API Key</li>
               <li>Adicione no arquivo .env.local:</li>
             </ol>
-            
+
             <div className="bg-black text-green-400 p-3 rounded font-mono text-sm">
               NEXT_PUBLIC_YOUTUBE_API_KEY=sua_api_key_aqui
             </div>
@@ -367,4 +368,8 @@ export default function YouTubeTestPage() {
       </Card>
     </div>
   );
-} 
+}
+
+export default function YouTubeTestPage() {
+  return <AppPageShell><YouTubeTestPageContent /></AppPageShell>;
+}

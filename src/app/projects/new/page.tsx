@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/use-auth-fixed'
 import { supabase } from '@/lib/supabase/client'
 import { toast } from 'sonner'
-import { ArrowLeft, FolderKanban, Save, X, Calendar, User } from 'lucide-react'
+import { ArrowLeft, FolderKanban, Save, X, Info } from 'lucide-react'
 
 interface ProjectFormData {
   title: string
@@ -57,7 +57,7 @@ export default function NewProject() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!user) {
       toast.error('Você precisa estar logado para criar um projeto')
       return
@@ -144,9 +144,9 @@ export default function NewProject() {
   return (
     <AuthGuard>
       <DashboardLayout>
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mx-auto max-w-4xl space-y-6">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
@@ -157,15 +157,15 @@ export default function NewProject() {
               Voltar
             </Button>
             <div className="flex items-center gap-3">
-              <FolderKanban className="h-6 w-6 text-green-500" />
-              <h1 className="text-2xl font-bold">Criar Novo Projeto</h1>
+              <FolderKanban className="h-6 w-6 text-primary" />
+              <h1>Criar Novo Projeto</h1>
             </div>
           </div>
 
           {/* Form */}
           <Card>
             <CardHeader>
-              <CardTitle>Informações do Projeto</CardTitle>
+              <CardTitle className="flex items-center gap-2"><FolderKanban className="h-5 w-5" />Informações do Projeto</CardTitle>
               <CardDescription>
                 Crie um novo projeto clínico para organizar tarefas, procedimentos e acompanhamento de pacientes.
               </CardDescription>
@@ -270,7 +270,7 @@ export default function NewProject() {
                 {/* Tags */}
                 <div className="space-y-2">
                   <Label htmlFor="tags">Tags</Label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <Input
                       id="tags"
                       placeholder="Ex: ortopedia, reabilitação, pós-cirúrgico..."
@@ -308,11 +308,11 @@ export default function NewProject() {
                 </div>
 
                 {/* Informações Adicionais */}
-                <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
-                  <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
-                    📋 Próximos Passos
+                <div className="rounded-xl border border-primary/15 bg-primary/5 p-4">
+                  <h3 className="mb-2 flex items-center gap-2 text-base font-semibold text-primary">
+                    <Info className="h-5 w-5" /> Próximos Passos
                   </h3>
-                  <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                  <ul className="space-y-1 text-sm text-muted-foreground">
                     <li>• Após criar o projeto, você poderá adicionar tarefas e colaboradores</li>
                     <li>• Configure marcos e prazos importantes</li>
                     <li>• Associe pacientes e documentos relevantes</li>
@@ -321,11 +321,11 @@ export default function NewProject() {
                 </div>
 
                 {/* Botões */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
                   <Button
                     type="submit"
                     disabled={isLoading || !formData.title.trim()}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 sm:order-2"
                   >
                     <Save className="h-4 w-4" />
                     {isLoading ? 'Criando...' : 'Criar Projeto'}

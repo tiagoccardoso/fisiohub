@@ -16,6 +16,7 @@ import { PatientProgressTab } from '@/components/patients/PatientProgressTab'
 import { PatientDocumentsTab } from '@/components/patients/PatientDocumentsTab'
 import { PatientAIInsights } from '@/components/patients/PatientAIInsights'
 import { Skeleton } from '@/components/ui/skeleton'
+import { AppPageShell } from '@/components/layouts/app-page-shell'
 
 interface Patient {
   id: string
@@ -36,10 +37,10 @@ const mockPatient: Patient = {
   created_at: '2024-01-15T10:00:00Z'
 }
 
-export default function PatientDetailPage({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> 
+function PatientDetailPageContent({
+  params
+}: {
+  params: Promise<{ id: string }>
 }) {
   const { id } = use(params)
   const [activeTab, setActiveTab] = useState('records')
@@ -88,7 +89,7 @@ export default function PatientDetailPage({
     )
   }
 
-  const age = patient.birth_date 
+  const age = patient.birth_date
     ? new Date().getFullYear() - new Date(patient.birth_date).getFullYear()
     : null
 
@@ -133,7 +134,7 @@ export default function PatientDetailPage({
               </div>
               <p className="font-medium">{patient.email || 'Não informado'}</p>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4" />
@@ -141,20 +142,20 @@ export default function PatientDetailPage({
               </div>
               <p className="font-medium">{patient.phone || 'Não informado'}</p>
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar className="h-4 w-4" />
                 Data de Nascimento
               </div>
               <p className="font-medium">
-                {patient.birth_date 
+                {patient.birth_date
                   ? format(new Date(patient.birth_date), 'dd/MM/yyyy', { locale: ptBR })
                   : 'Não informado'
                 }
               </p>
             </div>
-            
+
             {age && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -202,4 +203,8 @@ export default function PatientDetailPage({
       </Tabs>
     </div>
   )
+}
+
+export default function PatientDetailPage(props: { params: Promise<{ id: string }> }) {
+  return <AppPageShell><PatientDetailPageContent {...props} /></AppPageShell>
 }

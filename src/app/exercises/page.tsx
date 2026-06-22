@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { ExerciseLibrary } from '@/components/exercises/exercise-library'
 import { ExerciseForm } from '@/components/exercises/exercise-form'
 import { PrescriptionForm } from '@/components/exercises/prescription-form'
+import { AppPageShell } from '@/components/layouts/app-page-shell'
 
 interface Exercise {
   id?: string
@@ -42,7 +43,7 @@ type ViewMode = 'library' | 'create' | 'edit' | 'prescribe' | 'protocols'
 // Categorias anatômicas inspiradas no Painel Lumi
 const anatomicalRegions = [
   'Todos',
-  'Cervical', 
+  'Cervical',
   'Membros Superiores',
   'Tronco',
   'Membros Inferiores',
@@ -142,7 +143,7 @@ const mockProtocols: Protocol[] = [
   }
 ]
 
-export default function ExercisesPage() {
+function ExercisesPageContent() {
   const [exercises] = useState<Exercise[]>(mockExercises)
   const [protocols] = useState<Protocol[]>(mockProtocols)
   const [searchTerm, setSearchTerm] = useState('')
@@ -201,7 +202,7 @@ export default function ExercisesPage() {
       ...exercise,
       id: exercise.id || Date.now().toString()
     }
-    
+
     // In a real app, you would save to database here
     toast.success('Exercício salvo com sucesso!')
     setViewMode('library')
@@ -353,7 +354,7 @@ export default function ExercisesPage() {
                         <Badge variant="secondary" className="text-xs">
                           {exercise.anatomical_region}
                         </Badge>
-                        <Badge 
+                        <Badge
                           className={`text-xs border ${getDifficultyColor(exercise.difficulty_level)}`}
                           variant="outline"
                         >
@@ -382,7 +383,7 @@ export default function ExercisesPage() {
                   <p className="text-sm text-muted-foreground line-clamp-2">
                     {exercise.description}
                   </p>
-                  
+
                   <div className="space-y-2">
                     {exercise.muscle_group && (
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -399,16 +400,16 @@ export default function ExercisesPage() {
                   </div>
 
                   <div className="flex gap-2 pt-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    <Button
+                      size="sm"
+                      variant="outline"
                       className="flex-1"
                       onClick={() => handleEditExercise(exercise)}
                     >
                       Editar
                     </Button>
-                    <Button 
-                      size="sm" 
+                    <Button
+                      size="sm"
                       className="flex-1"
                       onClick={() => handlePrescribeExercise(exercise)}
                     >
@@ -457,7 +458,7 @@ export default function ExercisesPage() {
                   <p className="text-sm text-muted-foreground">
                     {protocol.description}
                   </p>
-                  
+
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Clock className="h-4 w-4" />
@@ -499,4 +500,8 @@ export default function ExercisesPage() {
       </Tabs>
     </div>
   )
-} 
+}
+
+export default function ExercisesPage() {
+  return <AppPageShell><ExercisesPageContent /></AppPageShell>
+}

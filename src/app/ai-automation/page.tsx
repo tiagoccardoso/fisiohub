@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Bot, 
-  Zap, 
-  Clock, 
-  CheckCircle, 
+import {
+  Bot,
+  Zap,
+  Clock,
+  CheckCircle,
   AlertCircle,
   MessageCircle,
   Calendar,
@@ -24,6 +24,7 @@ import {
   Lightbulb
 } from 'lucide-react';
 import Link from 'next/link';
+import { AppPageShell } from '@/components/layouts/app-page-shell';
 
 interface AIRecommendation {
   exercises: string[]
@@ -34,9 +35,9 @@ interface AIRecommendation {
   reasoning: string
 }
 
-export default function AIAutomationPage() {
+function AIAutomationPageContent() {
   const [activeTab, setActiveTab] = useState('ai-assistant');
-  
+
   // Estados para IA
   const [aiProfile, setAiProfile] = useState({
     age: '',
@@ -101,7 +102,7 @@ export default function AIAutomationPage() {
   const generateAIRecommendation = async () => {
     setIsGenerating(true);
     await new Promise(resolve => setTimeout(resolve, 3000));
-    
+
     const mockRecommendation = {
       exercises: ['Alongamento Lombar', 'Ponte Glúteo', 'Cat-Cow'],
       videos: ['Lombar Básico', 'Core Fortalecimento'],
@@ -110,7 +111,7 @@ export default function AIAutomationPage() {
       confidence: 87,
       reasoning: `Baseado no diagnóstico de ${aiProfile.condition} (severidade: ${aiProfile.severity}), recomendo 3x por semana durante 8 semanas. A idade foi considerada para uma progressão gradual.`
     };
-    
+
     setAiRecommendation(mockRecommendation);
     setIsGenerating(false);
   };
@@ -121,8 +122,8 @@ export default function AIAutomationPage() {
 
   // Funções da Automação
   const toggleAutomationRule = (ruleId: string) => {
-    setAutomationRules(prev => prev.map(rule => 
-      rule.id === ruleId 
+    setAutomationRules(prev => prev.map(rule =>
+      rule.id === ruleId
         ? { ...rule, isActive: !rule.isActive }
         : rule
     ));
@@ -133,8 +134,8 @@ export default function AIAutomationPage() {
     if (!rule) return;
 
     // Simular execução
-    setAutomationRules(prev => prev.map(r => 
-      r.id === ruleId 
+    setAutomationRules(prev => prev.map(r =>
+      r.id === ruleId
         ? { ...r, executionCount: r.executionCount + 1 }
         : r
     ));
@@ -144,8 +145,8 @@ export default function AIAutomationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="bg-transparent">
+      <div className="container mx-auto py-2">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link href="/dashboard">
@@ -183,7 +184,7 @@ export default function AIAutomationPage() {
             {!aiRecommendation ? (
               <div className="space-y-6">
                 {/* Introdução IA */}
-                <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+                <Card className="border-primary/15 bg-primary/5">
                   <CardHeader>
                     <div className="flex items-center gap-4">
                       <div className="p-3 bg-blue-100 rounded-xl">
@@ -194,7 +195,7 @@ export default function AIAutomationPage() {
                           Assistente de IA para Fisioterapia
                         </CardTitle>
                         <p className="text-blue-700 mt-2">
-                          Sistema inteligente que analisa o perfil do paciente e gera recomendações 
+                          Sistema inteligente que analisa o perfil do paciente e gera recomendações
                           personalizadas baseadas em evidências clínicas.
                         </p>
                       </div>
@@ -287,7 +288,7 @@ export default function AIAutomationPage() {
                       </Badge>
                     </div>
 
-                    <Button 
+                    <Button
                       onClick={generateAIRecommendation}
                       disabled={!isProfileComplete() || isGenerating}
                       className="w-full"
@@ -323,8 +324,8 @@ export default function AIAutomationPage() {
                           </p>
                         </div>
                       </div>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => setAiRecommendation(null)}
                       >
                         Nova Consulta
@@ -489,7 +490,7 @@ export default function AIAutomationPage() {
                 {automationRules.map((rule) => {
                   const IconComponent = rule.icon;
                   return (
-                    <div 
+                    <div
                       key={rule.id}
                       className={`p-4 rounded-lg border ${
                         rule.isActive ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'
@@ -543,25 +544,25 @@ export default function AIAutomationPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Button 
+                  <Button
                     className="h-20 flex-col gap-2"
                     onClick={() => executeRule('reminder_exercises')}
                   >
                     <MessageCircle className="h-5 w-5" />
                     <span>Enviar Lembretes</span>
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
+
+                  <Button
+                    variant="outline"
                     className="h-20 flex-col gap-2"
                     onClick={() => executeRule('weekly_report')}
                   >
                     <FileText className="h-5 w-5" />
                     <span>Gerar Relatório</span>
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
+
+                  <Button
+                    variant="outline"
                     className="h-20 flex-col gap-2"
                   >
                     <Settings className="h-5 w-5" />
@@ -575,4 +576,8 @@ export default function AIAutomationPage() {
       </div>
     </div>
   );
-} 
+}
+
+export default function AIAutomationPage() {
+  return <AppPageShell><AIAutomationPageContent /></AppPageShell>;
+}

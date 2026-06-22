@@ -17,43 +17,43 @@ import { Goniometer } from '@/components/ui/goniometer'
 import { FunctionalTests } from '@/components/ui/functional-tests'
 import { PhotoCapture } from '@/components/ui/photo-capture'
 import { toast } from 'sonner'
-import { 
-  ArrowLeft, Save, FileText, Activity, TestTube, Ruler, Camera, 
-  User, Target, AlertCircle, Stethoscope, CheckCircle 
+import {
+  ArrowLeft, Save, FileText, Activity, TestTube, Ruler, Camera,
+  User, Target, AlertCircle, Stethoscope, CheckCircle
 } from 'lucide-react'
 
 interface EvaluationData {
   patientId: string
   patientName: string
   evaluationDate: string
-  
+
   // Anamnese
   mainComplaint: string
   medicalHistory: string
   previousTreatments: string
   medications: string
   lifestyleFactors: string
-  
+
   // Avaliação da Dor
   painScale: number
   painLocation: string
   painCharacteristics: string
   painTriggers: string
   painRelief: string
-  
+
   // Exame Físico
   postureAnalysis: string
   muscleStrength: Record<string, string>
   rangeOfMotion: any[]
   functionalTests: any[]
-  
+
   // Diagnóstico e Plano
   clinicalDiagnosis: string
   physiotherapyDiagnosis: string
   treatmentGoals: string[]
   estimatedSessions: number
   frequencyPerWeek: number
-  
+
   // Observações
   generalNotes: string
 }
@@ -63,39 +63,39 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('anamnesis')
   const [isSaving, setIsSaving] = useState(false)
-  
+
   const [evaluationData, setEvaluationData] = useState<EvaluationData>({
     patientId: resolvedParams.id,
     patientName: 'Maria Silva', // TODO: Buscar do banco
     evaluationDate: new Date().toISOString().split('T')[0]!,
-    
+
     // Anamnese
     mainComplaint: '',
     medicalHistory: '',
     previousTreatments: '',
     medications: '',
     lifestyleFactors: '',
-    
+
     // Dor
     painScale: 0,
     painLocation: '',
     painCharacteristics: '',
     painTriggers: '',
     painRelief: '',
-    
+
     // Exame Físico
     postureAnalysis: '',
     muscleStrength: {},
     rangeOfMotion: [],
     functionalTests: [],
-    
+
     // Diagnóstico
     clinicalDiagnosis: '',
     physiotherapyDiagnosis: '',
     treatmentGoals: [],
     estimatedSessions: 12,
     frequencyPerWeek: 2,
-    
+
     // Observações
     generalNotes: ''
   })
@@ -105,14 +105,14 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
     try {
       // TODO: Salvar no Neon usando a nova migration
       console.log('Salvando avaliação completa:', evaluationData)
-      
+
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000))
-      
+
       toast.success('✅ Avaliação salva com sucesso!', {
         description: 'Dados salvos no prontuário do paciente'
       })
-      
+
       router.push(`/patients/${resolvedParams.id}`)
     } catch (error) {
       console.error('Erro ao salvar:', error)
@@ -185,7 +185,7 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                     </p>
                   </div>
                 </div>
-                
+
                 {/* Status rápido */}
                 <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                   <Badge variant="secondary" className="text-sm">
@@ -202,7 +202,7 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                   </EnhancedButton>
                 </div>
               </div>
-              
+
               {/* Status rápido */}
               <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
                 <CompactPainScale
@@ -276,8 +276,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                         id="mainComplaint"
                         placeholder="Descreva a queixa principal que trouxe o paciente à consulta..."
                         value={evaluationData.mainComplaint}
-                        onChange={(e) => setEvaluationData(prev => ({ 
-                          ...prev, mainComplaint: e.target.value 
+                        onChange={(e) => setEvaluationData(prev => ({
+                          ...prev, mainComplaint: e.target.value
                         }))}
                         className="mt-2"
                         rows={3}
@@ -291,8 +291,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                           id="medicalHistory"
                           placeholder="Doenças, cirurgias, internações anteriores..."
                           value={evaluationData.medicalHistory}
-                          onChange={(e) => setEvaluationData(prev => ({ 
-                            ...prev, medicalHistory: e.target.value 
+                          onChange={(e) => setEvaluationData(prev => ({
+                            ...prev, medicalHistory: e.target.value
                           }))}
                           rows={4}
                         />
@@ -303,8 +303,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                           id="previousTreatments"
                           placeholder="Fisioterapia, medicamentos, outros tratamentos..."
                           value={evaluationData.previousTreatments}
-                          onChange={(e) => setEvaluationData(prev => ({ 
-                            ...prev, previousTreatments: e.target.value 
+                          onChange={(e) => setEvaluationData(prev => ({
+                            ...prev, previousTreatments: e.target.value
                           }))}
                           rows={4}
                         />
@@ -318,8 +318,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                           id="medications"
                           placeholder="Medicamentos em uso regular..."
                           value={evaluationData.medications}
-                          onChange={(e) => setEvaluationData(prev => ({ 
-                            ...prev, medications: e.target.value 
+                          onChange={(e) => setEvaluationData(prev => ({
+                            ...prev, medications: e.target.value
                           }))}
                           rows={3}
                         />
@@ -330,8 +330,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                           id="lifestyleFactors"
                           placeholder="Atividade física, trabalho, hábitos posturais..."
                           value={evaluationData.lifestyleFactors}
-                          onChange={(e) => setEvaluationData(prev => ({ 
-                            ...prev, lifestyleFactors: e.target.value 
+                          onChange={(e) => setEvaluationData(prev => ({
+                            ...prev, lifestyleFactors: e.target.value
                           }))}
                           rows={3}
                         />
@@ -369,15 +369,15 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                     </div>
 
                     {evaluationData.painScale > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                      <div className="grid grid-cols-1 gap-6 rounded-xl bg-surface-container-low p-6 md:grid-cols-2">
                         <div>
                           <Label htmlFor="painLocation">Localização da Dor</Label>
                           <Input
                             id="painLocation"
                             placeholder="Ex: Região lombar, ombro direito..."
                             value={evaluationData.painLocation}
-                            onChange={(e) => setEvaluationData(prev => ({ 
-                              ...prev, painLocation: e.target.value 
+                            onChange={(e) => setEvaluationData(prev => ({
+                              ...prev, painLocation: e.target.value
                             }))}
                           />
                         </div>
@@ -387,8 +387,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                             id="painCharacteristics"
                             placeholder="Ex: Queimação, pontada, peso..."
                             value={evaluationData.painCharacteristics}
-                            onChange={(e) => setEvaluationData(prev => ({ 
-                              ...prev, painCharacteristics: e.target.value 
+                            onChange={(e) => setEvaluationData(prev => ({
+                              ...prev, painCharacteristics: e.target.value
                             }))}
                           />
                         </div>
@@ -398,8 +398,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                             id="painTriggers"
                             placeholder="Ex: Movimento, repouso, manhã..."
                             value={evaluationData.painTriggers}
-                            onChange={(e) => setEvaluationData(prev => ({ 
-                              ...prev, painTriggers: e.target.value 
+                            onChange={(e) => setEvaluationData(prev => ({
+                              ...prev, painTriggers: e.target.value
                             }))}
                           />
                         </div>
@@ -409,8 +409,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                             id="painRelief"
                             placeholder="Ex: Calor, medicamento, repouso..."
                             value={evaluationData.painRelief}
-                            onChange={(e) => setEvaluationData(prev => ({ 
-                              ...prev, painRelief: e.target.value 
+                            onChange={(e) => setEvaluationData(prev => ({
+                              ...prev, painRelief: e.target.value
                             }))}
                           />
                         </div>
@@ -437,7 +437,7 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                       onSave={handleGoniometryReading}
                       className="max-w-2xl mx-auto"
                     />
-                    
+
                     {evaluationData.rangeOfMotion.length > 0 && (
                       <div className="mt-8">
                         <h4 className="font-semibold mb-4">Medições Realizadas:</h4>
@@ -525,8 +525,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                           id="clinicalDiagnosis"
                           placeholder="Diagnóstico fornecido pelo médico..."
                           value={evaluationData.clinicalDiagnosis}
-                          onChange={(e) => setEvaluationData(prev => ({ 
-                            ...prev, clinicalDiagnosis: e.target.value 
+                          onChange={(e) => setEvaluationData(prev => ({
+                            ...prev, clinicalDiagnosis: e.target.value
                           }))}
                           rows={4}
                         />
@@ -537,8 +537,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                           id="physiotherapyDiagnosis"
                           placeholder="Diagnóstico cinético-funcional baseado na avaliação..."
                           value={evaluationData.physiotherapyDiagnosis}
-                          onChange={(e) => setEvaluationData(prev => ({ 
-                            ...prev, physiotherapyDiagnosis: e.target.value 
+                          onChange={(e) => setEvaluationData(prev => ({
+                            ...prev, physiotherapyDiagnosis: e.target.value
                           }))}
                           rows={4}
                         />
@@ -554,8 +554,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                           min="1"
                           max="50"
                           value={evaluationData.estimatedSessions}
-                          onChange={(e) => setEvaluationData(prev => ({ 
-                            ...prev, estimatedSessions: parseInt(e.target.value) || 0 
+                          onChange={(e) => setEvaluationData(prev => ({
+                            ...prev, estimatedSessions: parseInt(e.target.value) || 0
                           }))}
                         />
                       </div>
@@ -567,8 +567,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                           min="1"
                           max="7"
                           value={evaluationData.frequencyPerWeek}
-                          onChange={(e) => setEvaluationData(prev => ({ 
-                            ...prev, frequencyPerWeek: parseInt(e.target.value) || 0 
+                          onChange={(e) => setEvaluationData(prev => ({
+                            ...prev, frequencyPerWeek: parseInt(e.target.value) || 0
                           }))}
                         />
                       </div>
@@ -580,8 +580,8 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
                         id="generalNotes"
                         placeholder="Observações adicionais sobre a avaliação..."
                         value={evaluationData.generalNotes}
-                        onChange={(e) => setEvaluationData(prev => ({ 
-                          ...prev, generalNotes: e.target.value 
+                        onChange={(e) => setEvaluationData(prev => ({
+                          ...prev, generalNotes: e.target.value
                         }))}
                         rows={4}
                       />
@@ -595,4 +595,4 @@ export default function PatientEvaluationNew({ params }: { params: Promise<{ id:
       </DashboardLayout>
     </AuthGuard>
   )
-} 
+}

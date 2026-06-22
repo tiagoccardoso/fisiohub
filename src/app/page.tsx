@@ -19,10 +19,10 @@ import { DashboardWidgets, useDashboardWidgets } from '@/components/ui/dashboard
 import { useAuth } from '@/hooks/use-auth-fixed' // CORREÇÃO: Usar o hook refatorado
 import { supabase } from '@/lib/supabase/client' // CORREÇÃO: Importar a instância do cliente
 import { isMockMode } from '@/lib/auth'
-import { 
-  BookOpen, 
-  Users, 
-  FolderKanban, 
+import {
+  BookOpen,
+  Users,
+  FolderKanban,
   Calendar,
   TrendingUp,
   Clock,
@@ -193,7 +193,7 @@ export default function Dashboard() {
 
   const isUsingMock = isMockMode()
 
-  
+
 
   const getActivityIcon = (resourceType: string) => {
     switch (resourceType) {
@@ -211,13 +211,13 @@ export default function Dashboard() {
       delete: 'removeu',
       complete: 'completou'
     }
-    
+
     const resources = {
       notebook: 'um notebook',
       project: 'um projeto',
       task: 'uma tarefa'
     }
-    
+
     return `${actions[activity.action as keyof typeof actions] || 'modificou'} ${resources[activity.resource_type as keyof typeof resources] || 'um item'}`
   }
 
@@ -288,7 +288,7 @@ export default function Dashboard() {
                 {format(currentTime, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </p>
             </div>
-            
+
             <div className="flex items-center gap-3">
               {/* Advanced Dashboard Toggle */}
               <Button
@@ -349,7 +349,7 @@ export default function Dashboard() {
                   </>
                 ) : (
                   <>
-                    <EnhancedCard variant="elevated" animation="fade" className="hover-lift bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200">
+                    <EnhancedCard variant="elevated" animation="fade" className="hover-lift border-primary/15 bg-white">
                       <EnhancedCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <EnhancedCardTitle className="text-sm font-medium text-blue-700">Total de Cadernos</EnhancedCardTitle>
                         <BookOpen className="h-4 w-4 text-blue-600 animate-float" />
@@ -362,7 +362,7 @@ export default function Dashboard() {
                       </EnhancedCardContent>
                     </EnhancedCard>
 
-                    <EnhancedCard variant="elevated" animation="fade" className="hover-lift bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900 border-emerald-200">
+                    <EnhancedCard variant="elevated" animation="fade" className="hover-lift border-primary/15 bg-white">
                       <EnhancedCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <EnhancedCardTitle className="text-sm font-medium text-emerald-700">Projetos Ativos</EnhancedCardTitle>
                         <FolderKanban className="h-4 w-4 text-emerald-600 animate-float" />
@@ -375,7 +375,7 @@ export default function Dashboard() {
                       </EnhancedCardContent>
                     </EnhancedCard>
 
-                    <EnhancedCard variant="elevated" animation="fade" className="hover-lift bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200">
+                    <EnhancedCard variant="elevated" animation="fade" className="hover-lift border-primary/15 bg-white">
                       <EnhancedCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <EnhancedCardTitle className="text-sm font-medium text-purple-700">Equipe</EnhancedCardTitle>
                         <Users className="h-4 w-4 text-purple-600 animate-float" />
@@ -388,7 +388,7 @@ export default function Dashboard() {
                       </EnhancedCardContent>
                     </EnhancedCard>
 
-                    <EnhancedCard variant="elevated" animation="fade" className="hover-lift bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border-amber-200">
+                    <EnhancedCard variant="elevated" animation="fade" className="hover-lift border-primary/15 bg-white">
                       <EnhancedCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <EnhancedCardTitle className="text-sm font-medium text-amber-700">Taxa de Conclusão</EnhancedCardTitle>
                         <TrendingUp className="h-4 w-4 text-amber-600 animate-float" />
@@ -411,8 +411,8 @@ export default function Dashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {quickActions.map((action, index) => (
                     <Link key={index} href={action.href}>
-                      <EnhancedCard 
-                        variant="interactive" 
+                      <EnhancedCard
+                        variant="interactive"
                         animation="scale"
                         className="hover-lift group"
                       >
@@ -507,7 +507,7 @@ export default function Dashboard() {
             </>
           )}
 
-          
+
         </div>
 
         {/* Advanced Features */}

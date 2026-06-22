@@ -8,8 +8,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { createPatient } from '@/lib/api';
+import { ArrowLeft, Contact, Save, UserPlus } from 'lucide-react';
+import { AppPageShell } from '@/components/layouts/app-page-shell';
 
 const patientFormSchema = z.object({
   full_name: z.string().min(3, 'O nome completo é obrigatório.'),
@@ -23,7 +26,7 @@ const patientFormSchema = z.object({
 
 export type PatientFormValues = z.infer<typeof patientFormSchema>;
 
-export default function NewPatientPage() {
+function NewPatientPageContent() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -52,46 +55,76 @@ export default function NewPatientPage() {
   };
 
   return (
-    <div className="container mx-auto py-10">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold">Novo Paciente</h1>
-        <p className="text-muted-foreground">Preencha os dados para cadastrar um novo paciente.</p>
-      </header>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 max-w-2xl">
-        <div className="space-y-2">
-          <Label htmlFor="full_name">Nome Completo</Label>
-          <Input id="full_name" {...register('full_name')} />
-          {errors.full_name && <p className="text-red-500 text-sm">{errors.full_name.message}</p>}
-        </div>
+    <div className="min-h-dvh bg-background px-4 py-5 sm:px-6 sm:py-8">
+      <div className="mx-auto max-w-3xl space-y-6">
+        <header className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Voltar">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1>Novo Paciente</h1>
+            <p className="text-sm text-muted-foreground">Preencha os dados para cadastrar um novo paciente.</p>
+          </div>
+        </header>
 
-        <div className="space-y-2">
-          <Label htmlFor="birth_date">Data de Nascimento</Label>
-          <Input id="birth_date" type="date" {...register('birth_date')} />
-          {errors.birth_date && <p className="text-red-500 text-sm">{errors.birth_date.message}</p>}
-        </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><UserPlus className="h-5 w-5" />Identificação</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="full_name">Nome Completo *</Label>
+                <Input id="full_name" placeholder="Ex: Maria Oliveira Silva" aria-invalid={!!errors.full_name} {...register('full_name')} />
+                {errors.full_name && <p className="text-sm text-destructive">{errors.full_name.message}</p>}
+              </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="cpf">CPF (Opcional)</Label>
-          <Input id="cpf" {...register('cpf')} />
-          {errors.cpf && <p className="text-red-500 text-sm">{errors.cpf.message}</p>}
-        </div>
+              <div className="space-y-2">
+                <Label htmlFor="birth_date">Data de Nascimento *</Label>
+                <Input id="birth_date" type="date" aria-invalid={!!errors.birth_date} {...register('birth_date')} />
+                {errors.birth_date && <p className="text-sm text-destructive">{errors.birth_date.message}</p>}
+              </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="phone">Telefone (Opcional)</Label>
-          <Input id="phone" {...register('phone')} />
-          {errors.phone && <p className="text-red-500 text-sm">{errors.phone.message}</p>}
-        </div>
+              <div className="space-y-2">
+                <Label htmlFor="cpf">CPF (Opcional)</Label>
+                <Input id="cpf" placeholder="000.000.000-00" aria-invalid={!!errors.cpf} {...register('cpf')} />
+                {errors.cpf && <p className="text-sm text-destructive">{errors.cpf.message}</p>}
+              </div>
+            </CardContent>
+          </Card>
 
-        <div className="space-y-2">
-          <Label htmlFor="email">E-mail (Opcional)</Label>
-          <Input id="email" type="email" {...register('email')} />
-          {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
-        </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Contact className="h-5 w-5" />Informações de Contato</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="phone">Telefone (Opcional)</Label>
+                <Input id="phone" type="tel" placeholder="(00) 00000-0000" aria-invalid={!!errors.phone} {...register('phone')} />
+                {errors.phone && <p className="text-sm text-destructive">{errors.phone.message}</p>}
+              </div>
 
-        <Button type="submit" disabled={mutation.isPending}>
-          {mutation.isPending ? 'Salvando...' : 'Salvar Paciente'}
-        </Button>
-      </form>
+              <div className="space-y-2">
+                <Label htmlFor="email">E-mail (Opcional)</Label>
+                <Input id="email" type="email" placeholder="email@exemplo.com" aria-invalid={!!errors.email} {...register('email')} />
+                {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
+            <Button type="button" variant="outline" onClick={() => router.back()}>Cancelar</Button>
+            <Button type="submit" disabled={mutation.isPending} className="gap-2">
+              <Save className="h-4 w-4" />
+              {mutation.isPending ? 'Salvando...' : 'Salvar Paciente'}
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
+}
+
+export default function NewPatientPage() {
+  return <AppPageShell><NewPatientPageContent /></AppPageShell>;
 }

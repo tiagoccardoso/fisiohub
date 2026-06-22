@@ -1,60 +1,65 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 @layer base {
   :root {
-    /* Dark Mode Profissional - Paleta Principal */
-    --background: 222.2 84% 4.9%; /* #0f172a - slate-900 */
-    --foreground: 210 40% 98%; /* #f8fafc - slate-50 */
-    
+    --background: 204 100% 98%;
+    --foreground: 200 45% 10%;
+
     /* Superfícies */
-    --surface: 217.2 32.6% 17.5%; /* #1e293b - slate-800 */
-    --surface-hover: 215.4 16.3% 26.9%; /* #334155 - slate-700 */
-    
+    --surface: 204 74% 94%;
+    --surface-hover: 201 56% 89%;
+    --surface-container-lowest: 0 0% 100%;
+    --surface-container-low: 202 100% 95%;
+    --surface-container: 203 70% 93%;
+    --surface-container-high: 201 57% 91%;
+
     /* Cores Primárias */
-    --primary: 217.2 91.2% 59.8%; /* #3b82f6 - blue-500 */
-    --primary-foreground: 222.2 84% 4.9%;
-    --primary-hover: 221.2 83.2% 53.3%; /* #2563eb - blue-600 */
-    
+    --primary: 188 100% 18%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 188 73% 26%;
+
     /* Cores de Status */
     --success: 160 84.1% 39.4%; /* #10b981 - emerald-500 */
     --success-foreground: 355.7 100% 97.3%;
-    
+
     --warning: 32.1 94.6% 43.7%; /* #f59e0b - amber-500 */
     --warning-foreground: 355.7 100% 97.3%;
-    
+
     --destructive: 0 84.2% 60.2%; /* #ef4444 - red-500 */
     --destructive-foreground: 210 40% 98%;
-    
+
     /* Cores de Texto */
-    --text-primary: 210 40% 98%; /* #f8fafc - slate-50 */
-    --text-secondary: 214.3 31.8% 91.4%; /* #cbd5e1 - slate-300 */
-    
+    --text-primary: 200 45% 10%;
+    --text-secondary: 190 9% 27%;
+
     /* Componentes UI */
-    --card: 217.2 32.6% 17.5%; /* #1e293b - slate-800 */
-    --card-foreground: 210 40% 98%;
-    
-    --popover: 217.2 32.6% 17.5%;
-    --popover-foreground: 210 40% 98%;
-    
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 215.4 16.3% 26.9%; /* #334155 - slate-700 */
-    --muted-foreground: 217.9 10.6% 64.9%;
-    
-    --accent: 215.4 16.3% 26.9%;
-    --accent-foreground: 210 40% 98%;
-    
-    --border: 217.9 10.6% 64.9%; /* #475569 - slate-600 */
-    --input: 217.9 10.6% 64.9%;
-    --ring: 217.2 91.2% 59.8%;
-    
-    --radius: 0.5rem;
-    
+    --card: 0 0% 100%;
+    --card-foreground: 200 45% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 200 45% 10%;
+
+    --secondary: 225 100% 87%;
+    --secondary-foreground: 224 30% 39%;
+
+    --muted: 204 43% 92%;
+    --muted-foreground: 217 14% 44%;
+
+    --accent: 202 100% 95%;
+    --accent-foreground: 188 100% 18%;
+
+    --border: 190 10% 79%;
+    --input: 195 17% 72%;
+    --ring: 188 100% 18%;
+    --outline: 190 5% 46%;
+    --outline-variant: 190 10% 77%;
+
+    --radius: 0.75rem;
+
     /* ✅ NOVO: Safe areas para iPhone */
     --safe-area-inset-top: env(safe-area-inset-top);
     --safe-area-inset-right: env(safe-area-inset-right);
@@ -67,15 +72,15 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
     /* ✅ NOVO: Otimizações para iOS */
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior: none;
+    overflow-x: hidden;
   }
-  
+
   /* ✅ NOVO: Layout principal com safe areas */
   .ios-safe-layout {
     padding-top: max(1rem, var(--safe-area-inset-top));
@@ -83,7 +88,7 @@
     padding-bottom: max(1rem, var(--safe-area-inset-bottom));
     padding-left: max(1rem, var(--safe-area-inset-left));
   }
-  
+
   /* ✅ NOVO: Otimizar touch para iOS */
   .touch-optimized {
     -webkit-touch-callout: none;
@@ -91,7 +96,7 @@
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
   }
-  
+
   /* ✅ NOVO: Botões otimizados para iOS */
   .ios-button {
     min-height: 44px; /* Recomendação Apple */
@@ -100,26 +105,26 @@
     -webkit-appearance: none;
     border-radius: 12px; /* iOS style */
   }
-  
+
   /* ✅ NOVO: Feedback visual para touch */
   .ios-button:active {
     transform: scale(0.97);
     transition: transform 0.1s ease;
   }
-  
+
   /* ✅ NOVO: Inputs otimizados para iOS */
   .ios-input {
     -webkit-appearance: none;
     border-radius: 12px;
     font-size: 16px; /* Previne zoom no iOS */
   }
-  
+
   /* ✅ NOVO: Scroll suave no iOS */
   .smooth-scroll {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
   }
-  
+
   /* ✅ NOVO: Otimizar animações para iOS */
   .ios-animation {
     -webkit-transform: translateZ(0);
@@ -127,56 +132,56 @@
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
   }
-  
+
   /* ✅ NOVO: Animações suaves aprimoradas */
   .animate-scale-in {
     animation: scaleIn 0.2s ease-out;
   }
-  
+
   .animate-fade-in-up {
     animation: fadeInUp 0.4s ease-out;
   }
-  
+
   .animate-slide-in-right {
     animation: slideInRight 0.3s ease-out;
   }
-  
+
   .animate-bounce-gentle {
     animation: bounceGentle 0.6s ease-in-out;
   }
-  
+
   .animate-pulse-slow {
     animation: pulseSlow 2s ease-in-out infinite;
   }
-  
+
   /* Hover effects */
   .hover-lift {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
-  
+
   .hover-lift:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   }
-  
+
   /* Floating animation */
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
-  
+
   .hover-glow {
     transition: box-shadow 0.3s ease;
   }
-  
+
   .hover-glow:hover {
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
   }
-  
+
   /* Focus improvements */
   .focus-ring-enhanced {
     transition: all 0.2s ease;
   }
-  
+
   .focus-ring-enhanced:focus {
     outline: none;
     ring: 2px;
@@ -184,40 +189,40 @@
     ring-offset: 2px;
     transform: scale(1.02);
   }
-  
+
   /* Scrollbar personalizado */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
-  
+
   ::-webkit-scrollbar-track {
     @apply bg-surface;
   }
-  
+
   ::-webkit-scrollbar-thumb {
     @apply bg-muted rounded-md;
   }
-  
+
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-muted-foreground;
   }
-  
+
   /* Seleção de texto */
   ::selection {
     @apply bg-primary/30 text-primary-foreground;
   }
-  
+
   /* Focus ring personalizado */
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
   }
-  
+
   /* Heading styles */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold text-foreground;
+    @apply font-display font-semibold text-foreground;
   }
-  
+
   h1 { @apply text-3xl lg:text-4xl; }
   h2 { @apply text-2xl lg:text-3xl; }
   h3 { @apply text-xl lg:text-2xl; }
@@ -231,70 +236,70 @@
   .clinical-card {
     @apply bg-card border border-border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow;
   }
-  
+
   .protocol-badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20;
   }
-  
+
   .status-badge {
     @apply inline-flex items-center px-2 py-1 rounded-md text-xs font-medium;
   }
-  
+
   .status-active {
     @apply bg-success/10 text-success border border-success/20;
   }
-  
+
   .status-pending {
     @apply bg-warning/10 text-warning border border-warning/20;
   }
-  
+
   .status-completed {
     @apply bg-muted/10 text-muted-foreground border border-muted/20;
   }
-  
+
   /* Editor styles */
   .editor-container {
     @apply bg-card border border-border rounded-lg overflow-hidden;
   }
-  
+
   .editor-toolbar {
     @apply flex items-center gap-1 p-2 border-b border-border bg-surface/50;
   }
-  
+
   .editor-content {
     @apply p-4 min-h-[200px] focus:outline-none;
   }
-  
+
   /* Kanban styles */
   .kanban-column {
     @apply bg-surface/50 rounded-lg p-4 min-h-[500px] w-80;
   }
-  
+
   .kanban-card {
     @apply bg-card border border-border rounded-md p-3 mb-3 cursor-pointer hover:shadow-md transition-all;
   }
-  
+
   /* Dashboard styles */
   .metric-card {
     @apply bg-card border border-border rounded-lg p-6;
   }
-  
+
   .metric-value {
     @apply text-3xl font-bold text-foreground;
   }
-  
+
   .metric-label {
     @apply text-sm text-muted-foreground;
   }
-  
+
   .metric-change {
     @apply text-xs font-medium;
   }
-  
+
   .metric-positive {
     @apply text-success;
   }
-  
+
   .metric-negative {
     @apply text-destructive;
   }
@@ -305,33 +310,33 @@
   .text-gradient {
     @apply bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent;
   }
-  
+
   .glass-effect {
     @apply bg-background/80 backdrop-blur-sm border border-border/50;
   }
-  
+
   .sidebar-width {
     width: 280px;
   }
-  
+
   .sidebar-collapsed {
     width: 64px;
   }
-  
+
   /* Animações personalizadas */
   .animate-pulse-slow {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  
+
   .animate-bounce-gentle {
     animation: bounce 2s infinite;
   }
-  
+
   /* Estados de loading */
   .skeleton {
     @apply animate-pulse bg-muted rounded;
   }
-  
+
   .loading-spinner {
     @apply animate-spin h-4 w-4 border-2 border-muted border-t-primary rounded-full;
   }
@@ -451,31 +456,31 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
   }
-  
+
   h1 {
     @apply text-4xl font-bold;
   }
-  
+
   h2 {
     @apply text-3xl font-semibold;
   }
-  
+
   h3 {
     @apply text-2xl font-semibold;
   }
-  
+
   h4 {
     @apply text-xl font-medium;
   }
-  
+
   .text-medical {
     @apply text-medical-500;
   }
-  
+
   .bg-medical {
     @apply bg-medical-500;
   }
-  
+
   .border-medical {
     @apply border-medical-500;
   }
@@ -487,20 +492,20 @@
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--muted)) transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: hsl(var(--muted));
     border-radius: 3px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background-color: hsl(var(--muted-foreground));
   }
@@ -511,19 +516,19 @@
   .status-indicator {
     @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
   }
-  
+
   .status-active {
     @apply bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-100;
   }
-  
+
   .status-pending {
     @apply bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-100;
   }
-  
+
   .status-completed {
     @apply bg-medical-100 text-medical-800 dark:bg-medical-900 dark:text-medical-100;
   }
-  
+
   .status-cancelled {
     @apply bg-error-100 text-error-800 dark:bg-error-900 dark:text-error-100;
   }
@@ -534,19 +539,19 @@
   .medical-card {
     @apply bg-card border border-border rounded-lg p-6 shadow-sm;
   }
-  
+
   .medical-card-header {
     @apply flex items-center justify-between pb-4 border-b border-border;
   }
-  
+
   .medical-card-title {
     @apply text-lg font-semibold text-card-foreground;
   }
-  
+
   .medical-card-description {
     @apply text-sm text-muted-foreground;
   }
-  
+
   .medical-card-content {
     @apply pt-4;
   }
@@ -557,15 +562,15 @@
   .btn-medical {
     @apply bg-medical-500 text-white hover:bg-medical-600 focus:ring-medical-300;
   }
-  
+
   .btn-success {
     @apply bg-success-500 text-white hover:bg-success-600 focus:ring-success-300;
   }
-  
+
   .btn-warning {
     @apply bg-warning-500 text-white hover:bg-warning-600 focus:ring-warning-300;
   }
-  
+
   .btn-error {
     @apply bg-error-500 text-white hover:bg-error-600 focus:ring-error-300;
   }
@@ -576,15 +581,15 @@
   .sidebar {
     @apply bg-card border-r border-border min-h-screen;
   }
-  
+
   .main-content {
     @apply bg-background min-h-screen;
   }
-  
+
   .navbar {
     @apply bg-card border-b border-border;
   }
-  
+
   .content-area {
     @apply bg-background p-6;
   }
@@ -595,11 +600,11 @@
   .animate-fade-in {
     animation: fade-in 0.5s ease-in-out;
   }
-  
+
   .animate-slide-in {
     animation: slide-in 0.3s ease-out;
   }
-  
+
   .animate-pulse-medical {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
@@ -610,7 +615,7 @@
   *:focus-visible {
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
-  
+
   button:focus-visible,
   input:focus-visible,
   select:focus-visible,
@@ -624,21 +629,21 @@
   .no-print {
     display: none !important;
   }
-  
+
   .print-only {
     display: block !important;
   }
-  
+
   body {
     background: white !important;
     color: black !important;
   }
-  
+
   .medical-card {
     border: 1px solid #ccc !important;
     box-shadow: none !important;
   }
-} 
+}
 
 /* ✅ OTIMIZAÇÕES ESPECÍFICAS PARA iOS */
 
@@ -680,21 +685,78 @@
   font-size: 16px;
 }
 
-/* Media queries específicas para dispositivos iOS */
-@media only screen and (device-width: 375px) and (device-height: 812px) {
-  .sidebar { transform: translateX(-100%); }
-  .main-content { margin-left: 0; }
+/* Camada final do padrão VitalSync Pro */
+@layer base {
+  html {
+    background: hsl(var(--background));
+  }
+
+  body {
+    min-width: 320px;
+    color: hsl(var(--foreground));
+  }
+
+  h1 {
+    @apply font-display text-2xl font-semibold leading-8 sm:text-3xl sm:leading-10;
+  }
+
+  h2 {
+    @apply font-display text-xl font-semibold leading-7 sm:text-2xl sm:leading-8;
+  }
+
+  h3 {
+    @apply font-display text-lg font-semibold leading-7 sm:text-xl;
+  }
+
+  p, label, button, input, textarea, select, td, th {
+    overflow-wrap: anywhere;
+  }
+
+  input, textarea, select {
+    font-size: 16px;
+  }
 }
 
-@media only screen and (device-width: 390px) and (device-height: 844px) {
-  .container { padding: 0 1rem; }
+@layer components {
+  .app-shell main .container {
+    max-width: 100%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .app-shell form > .flex:last-child {
+    flex-wrap: wrap;
+  }
+
+  .empty-state {
+    @apply rounded-2xl border border-dashed border-outline-variant bg-white px-5 py-10 text-center text-muted-foreground;
+  }
+
+  .success-state {
+    @apply rounded-xl border border-success-200 bg-success-50 p-4 text-success-800;
+  }
+
+  .error-state {
+    @apply rounded-xl border border-error-200 bg-error-50 p-4 text-error-800;
+  }
 }
 
-@media only screen and (device-width: 430px) and (device-height: 932px) {
-  .dynamic-island-space { margin-top: 54px; }
+@media (max-width: 639px) {
+  .app-shell [role="tablist"] {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .app-shell form button[type="submit"] {
+    flex: 1 1 10rem;
+  }
 }
 
-@media only screen and (device-width: 820px) and (device-height: 1180px) {
-  .sidebar { width: 320px; }
-  .grid { grid-template-columns: repeat(3, 1fr); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

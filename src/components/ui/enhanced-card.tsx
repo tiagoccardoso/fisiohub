@@ -4,17 +4,17 @@ import { cn } from "@/lib/utils"
 import { Loader2 } from "lucide-react"
 
 const enhancedCardVariants = cva(
-  "rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-300",
+  "rounded-2xl border border-outline-variant/60 bg-card text-card-foreground shadow-clinical transition-all duration-200",
   {
     variants: {
       variant: {
-        default: "hover:shadow-lg hover:-translate-y-1",
-        elevated: "shadow-lg hover:shadow-xl hover:-translate-y-2",
-        flat: "shadow-none border-2 hover:border-primary/50",
-        glass: "bg-white/10 backdrop-blur-md border-white/20 shadow-xl",
-        gradient: "bg-gradient-to-br from-card to-card/80 hover:from-card/90 hover:to-card/70",
-        medical: "border-medical-200 bg-gradient-to-br from-medical-50 to-white hover:shadow-medical-200/50 hover:shadow-lg",
-        interactive: "cursor-pointer hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]",
+        default: "hover:shadow-clinical-lg",
+        elevated: "shadow-clinical hover:shadow-clinical-lg",
+        flat: "shadow-none hover:border-primary/35",
+        glass: "border-white/50 bg-white/85 backdrop-blur-md",
+        gradient: "bg-card hover:bg-primary/5",
+        medical: "border-primary/15 bg-primary/5 hover:shadow-clinical-lg",
+        interactive: "cursor-pointer hover:border-primary/30 hover:shadow-clinical-lg active:scale-[0.99]",
       },
       size: {
         sm: "p-3",
@@ -68,7 +68,7 @@ const EnhancedCard = React.forwardRef<HTMLDivElement, EnhancedCardProps>(
           </div>
         </div>
       )}
-      
+
       {/* Card Content */}
       <div className={cn("relative", loading && "opacity-50")}>
         {children}
@@ -96,7 +96,7 @@ EnhancedCardHeader.displayName = "EnhancedCardHeader"
 
 const EnhancedCardTitle = React.forwardRef<
   HTMLParagraphElement,
-  React.HTMLAttributes<HTMLHeadingElement> & { 
+  React.HTMLAttributes<HTMLHeadingElement> & {
     as?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6"
     gradient?: boolean
   }
@@ -104,8 +104,8 @@ const EnhancedCardTitle = React.forwardRef<
   <Component
     ref={ref}
     className={cn(
-      "font-semibold leading-none tracking-tight",
-      gradient && "bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent",
+      "font-display font-semibold leading-none text-primary",
+      gradient && "text-primary",
       className
     )}
     {...props}
@@ -158,4 +158,4 @@ export {
   EnhancedCardTitle,
   EnhancedCardDescription,
   EnhancedCardContent,
-} 
+}

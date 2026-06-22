@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/use-auth'
 import { NotificationsPanel } from '@/components/ui/notifications-panel'
 import { cn } from '@/lib/utils'
-import { 
+import {
   Home,
-  BookOpen, 
+  BookOpen,
   Target,
   Users,
   Calendar,
@@ -120,6 +120,14 @@ const quickActions = [
   }
 ]
 
+const mobileNavigationItems = [
+  navigationItems[0],
+  navigationItems[6],
+  navigationItems[3],
+  navigationItems[1],
+  navigationItems[4],
+]
+
 export function Sidebar() {
   const pathname = usePathname()
   const { user, signOut } = useAuth()
@@ -142,18 +150,18 @@ export function Sidebar() {
   }
 
   return (
-    <div className="sidebar w-64 p-4 flex flex-col h-full bg-gradient-to-b from-background to-background/95 border-r border-border/50">
+    <>
+    <aside className="sidebar sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-border/70 bg-white p-4 lg:flex">
       {/* Logo */}
       <div className="flex items-center gap-2 mb-8 animate-fade-in-up">
         <div className="relative">
-          <Heart className="h-8 w-8 text-medical-500 animate-float" />
-          <div className="absolute inset-0 h-8 w-8 text-medical-500/20 animate-pulse"></div>
+          <Heart className="h-8 w-8 text-primary" />
         </div>
-        <h1 className="text-xl font-bold text-foreground bg-gradient-to-r from-medical-600 to-medical-500 bg-clip-text text-transparent">
+        <h1 className="font-display text-xl font-bold text-primary">
           FisioSys
         </h1>
       </div>
-      
+
       {/* Quick Search */}
       <Button variant="outline" className="w-full justify-start mb-6" size="sm">
         <Search className="mr-2 h-4 w-4" />
@@ -162,16 +170,16 @@ export function Sidebar() {
       </Button>
 
       {/* Navigation */}
-      <nav className="space-y-1 flex-1">
+      <nav className="flex-1 space-y-1" aria-label="Navegação principal">
         {navigationItems.map((item, index) => {
           const isActive = pathname === item.href
           return (
             <Link key={item.href} href={item.href}>
-              <EnhancedButton 
-                variant={isActive ? "medical" : "ghost"} 
+              <EnhancedButton
+                variant={isActive ? "medical" : "ghost"}
                 className={cn(
-                  "w-full justify-start group hover-lift animate-fade-in-up",
-                  isActive && "shadow-lg shadow-medical-500/25 bg-gradient-to-r from-medical-500 to-medical-600"
+                  "group w-full justify-start",
+                  isActive && "bg-primary text-white shadow-sm"
                 )}
                 size="sm"
                 animation="scale"
@@ -183,8 +191,8 @@ export function Sidebar() {
                 )} />
                 <span className="flex-1 text-left">{item.label}</span>
                 {item.badge && (
-                  <Badge 
-                    variant={isActive ? "secondary" : "outline"} 
+                  <Badge
+                    variant={isActive ? "secondary" : "outline"}
                     className={cn(
                       "ml-auto text-xs transition-all duration-200 animate-pulse-slow",
                       isActive && "bg-white/20 text-white border-white/30"
@@ -240,9 +248,9 @@ export function Sidebar() {
               Configurações
             </Button>
           </Link>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" 
+          <Button
+            variant="ghost"
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
             size="sm"
             onClick={handleLogout}
           >
@@ -251,6 +259,30 @@ export function Sidebar() {
           </Button>
         </div>
       </div>
-    </div>
+    </aside>
+
+    <nav
+      className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-border bg-white/95 px-1 pb-[max(.35rem,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-4px_18px_rgba(14,29,37,0.06)] backdrop-blur lg:hidden"
+      aria-label="Navegação móvel"
+    >
+      {mobileNavigationItems.map((item) => {
+        const isActive = pathname === item.href
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={isActive ? 'page' : undefined}
+            className={cn(
+              'flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-1 py-1.5 text-[11px] font-medium text-muted-foreground transition-colors',
+              isActive && 'bg-primary/10 text-primary'
+            )}
+          >
+            <item.icon className="h-5 w-5" />
+            <span className="w-full truncate text-center">{item.label}</span>
+          </Link>
+        )
+      })}
+    </nav>
+    </>
   )
-} 
+}

@@ -1,10 +1,11 @@
 import { createServerAuthClient } from '@/lib/auth-server';
 import { redirect } from 'next/navigation';
 import KanbanBoard from '@/components/tasks/KanbanBoard';
+import { AppPageShell } from '@/components/layouts/app-page-shell';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TasksPage() {
+async function TasksPageContent() {
   const supabase = await createServerAuthClient();
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -23,4 +24,8 @@ export default async function TasksPage() {
       </main>
     </div>
   );
-} 
+}
+
+export default function TasksPage() {
+  return <AppPageShell><TasksPageContent /></AppPageShell>;
+}

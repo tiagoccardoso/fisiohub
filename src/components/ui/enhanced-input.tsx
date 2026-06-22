@@ -13,8 +13,8 @@ export interface EnhancedInputProps extends React.InputHTMLAttributes<HTMLInputE
 }
 
 const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
-  ({ 
-    className, 
+  ({
+    className,
     type,
     label,
     helperText,
@@ -25,7 +25,7 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
     onClear,
     value,
     placeholder,
-    ...props 
+    ...props
   }, ref) => {
     const [showPassword, setShowPassword] = React.useState(false)
     const [hasValue, setHasValue] = React.useState(Boolean(value))
@@ -49,11 +49,11 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
     return (
       <div className="space-y-2">
         {label && (
-          <label className="block text-sm font-medium text-foreground">
+          <label className="block text-sm font-semibold text-foreground">
             {label}
           </label>
         )}
-        
+
         <div className="relative">
           {leftIcon && (
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
@@ -64,7 +64,7 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
           <input
             type={isPasswordType && showPassword ? "text" : type}
             className={cn(
-              "flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ios-input focus-ring-enhanced hover-lift",
+              "ios-input flex min-h-12 w-full rounded-lg border border-input bg-white px-3.5 py-2.5 text-base ring-offset-background transition-all duration-200 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/25 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:bg-muted/50 disabled:opacity-60",
               leftIcon && "pl-10",
               (rightIcon || clearable || isPasswordType) && "pr-10",
               errorMessage && "border-destructive focus-visible:ring-destructive",
@@ -129,4 +129,4 @@ const EnhancedInput = React.forwardRef<HTMLInputElement, EnhancedInputProps>(
 
 EnhancedInput.displayName = "EnhancedInput"
 
-export { EnhancedInput } 
+export { EnhancedInput }

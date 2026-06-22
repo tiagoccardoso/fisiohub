@@ -4,18 +4,18 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex min-w-0 items-center justify-center whitespace-normal rounded-lg text-center text-sm font-semibold leading-5 ring-offset-background transition-[background-color,color,border-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        default: "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 hover:shadow-md",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
-          "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+          "border border-input bg-white text-foreground hover:border-primary/35 hover:bg-primary/5 hover:text-primary",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        ghost: "text-foreground hover:bg-primary/10 hover:text-primary",
         link: "text-primary underline-offset-4 hover:underline",
         medical: "bg-medical-500 text-white hover:bg-medical-600 focus:ring-medical-300",
         success: "bg-success-500 text-white hover:bg-success-600 focus:ring-success-300",
@@ -23,10 +23,10 @@ const buttonVariants = cva(
         error: "bg-error-500 text-white hover:bg-error-600 focus:ring-error-300",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
-        icon: "h-10 w-10",
+        default: "min-h-11 px-4 py-2.5",
+        sm: "min-h-9 rounded-lg px-3 py-2",
+        lg: "min-h-12 rounded-lg px-8 py-3 text-base",
+        icon: "h-11 w-11 shrink-0 p-0",
       },
     },
     defaultVariants: {
@@ -65,4 +65,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = "Button"
 
-export { Button, buttonVariants } 
+export { Button, buttonVariants }

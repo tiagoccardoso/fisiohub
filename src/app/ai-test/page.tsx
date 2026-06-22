@@ -8,10 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Brain, 
-  Clock, 
-  Activity, 
+import {
+  Brain,
+  Clock,
+  Activity,
   Lightbulb,
   CheckCircle,
   Video,
@@ -22,20 +22,21 @@ import {
 } from 'lucide-react';
 import { AIEngine, PatientProfile, AIRecommendation } from '@/services/ai';
 import Link from 'next/link';
+import { AppPageShell } from '@/components/layouts/app-page-shell';
 
-export default function AITestPage() {
+function AITestPageContent() {
   const [profile, setProfile] = useState<Partial<PatientProfile>>({});
   const [recommendation, setRecommendation] = useState<AIRecommendation | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleGenerate = async () => {
     if (!isComplete()) return;
-    
+
     setIsGenerating(true);
-    
+
     // Simular processamento de IA
     await new Promise(resolve => setTimeout(resolve, 2500));
-    
+
     try {
       const result = AIEngine.generateRecommendation(profile as PatientProfile);
       setRecommendation(result);
@@ -47,7 +48,7 @@ export default function AITestPage() {
   };
 
   const isComplete = () => {
-    return profile.age && profile.condition && profile.severity && 
+    return profile.age && profile.condition && profile.severity &&
            profile.painLevel !== undefined && profile.lifestyle;
   };
 
@@ -64,8 +65,8 @@ export default function AITestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="bg-transparent">
+      <div className="container mx-auto py-2">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <Link href="/dashboard-pro">
@@ -103,8 +104,8 @@ export default function AITestPage() {
                       </p>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => setRecommendation(null)}
                   >
                     Nova Consulta
@@ -114,8 +115,8 @@ export default function AITestPage() {
               <CardContent>
                 <div className="flex items-center gap-4">
                   <div className="flex-1">
-                    <Progress 
-                      value={recommendation.confidence} 
+                    <Progress
+                      value={recommendation.confidence}
                       className="h-3"
                     />
                   </div>
@@ -192,7 +193,7 @@ export default function AITestPage() {
                 <CardContent>
                   <div className="space-y-3">
                     {recommendation.exercises.map((exercise, index) => (
-                      <div 
+                      <div
                         key={index}
                         className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg border border-orange-100"
                       >
@@ -221,7 +222,7 @@ export default function AITestPage() {
                 <CardContent>
                   <div className="space-y-3">
                     {recommendation.videos.map((video, index) => (
-                      <div 
+                      <div
                         key={index}
                         className="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-100"
                       >
@@ -277,7 +278,7 @@ export default function AITestPage() {
         ) : (
           <div className="space-y-6">
             {/* Introdução */}
-            <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+            <Card className="border-primary/15 bg-primary/5">
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-blue-100 rounded-xl">
@@ -288,7 +289,7 @@ export default function AITestPage() {
                       Assistente de IA para Fisioterapia
                     </CardTitle>
                     <p className="text-blue-700 mt-2">
-                      Sistema inteligente que analisa o perfil do paciente e gera recomendações 
+                      Sistema inteligente que analisa o perfil do paciente e gera recomendações
                       personalizadas baseadas em evidências clínicas e protocolos estabelecidos.
                     </p>
                   </div>
@@ -322,8 +323,8 @@ export default function AITestPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="condition">Condição/Diagnóstico Principal</Label>
-                    <Select 
-                      value={profile.condition} 
+                    <Select
+                      value={profile.condition}
                       onValueChange={(v) => setProfile({...profile, condition: v})}
                     >
                       <SelectTrigger>
@@ -343,8 +344,8 @@ export default function AITestPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="severity">Severidade da Condição</Label>
-                    <Select 
-                      value={profile.severity} 
+                    <Select
+                      value={profile.severity}
                       onValueChange={(v: any) => setProfile({...profile, severity: v})}
                     >
                       <SelectTrigger>
@@ -374,8 +375,8 @@ export default function AITestPage() {
                 {/* Estilo de Vida */}
                 <div className="space-y-2">
                   <Label htmlFor="lifestyle">Estilo de Vida do Paciente</Label>
-                  <Select 
-                    value={profile.lifestyle} 
+                  <Select
+                    value={profile.lifestyle}
                     onValueChange={(v: any) => setProfile({...profile, lifestyle: v})}
                   >
                     <SelectTrigger>
@@ -403,8 +404,8 @@ export default function AITestPage() {
                           {isComplete() ? 'Perfil Completo' : 'Perfil Incompleto'}
                         </p>
                         <p className="text-sm text-gray-600">
-                          {isComplete() 
-                            ? 'Todos os dados necessários foram preenchidos' 
+                          {isComplete()
+                            ? 'Todos os dados necessários foram preenchidos'
                             : 'Preencha todos os campos para continuar'
                           }
                         </p>
@@ -417,7 +418,7 @@ export default function AITestPage() {
                 </div>
 
                 {/* Botão de Gerar */}
-                <Button 
+                <Button
                   onClick={handleGenerate}
                   disabled={!isComplete() || isGenerating}
                   size="lg"
@@ -480,4 +481,8 @@ export default function AITestPage() {
       </div>
     </div>
   );
+}
+
+export default function AITestPage() {
+  return <AppPageShell><AITestPageContent /></AppPageShell>;
 }

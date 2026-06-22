@@ -49,7 +49,7 @@ export default function NewNotebook() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!user) {
       toast.error('Você precisa estar logado para criar um notebook')
       return
@@ -133,9 +133,9 @@ export default function NewNotebook() {
   return (
     <AuthGuard>
       <DashboardLayout>
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mx-auto max-w-4xl space-y-6">
           {/* Header */}
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
@@ -146,15 +146,15 @@ export default function NewNotebook() {
               Voltar
             </Button>
             <div className="flex items-center gap-3">
-              <BookOpen className="h-6 w-6 text-blue-500" />
-              <h1 className="text-2xl font-bold">Criar Novo Notebook</h1>
+              <BookOpen className="h-6 w-6 text-primary" />
+              <h1>Criar Novo Notebook</h1>
             </div>
           </div>
 
           {/* Form */}
           <Card>
             <CardHeader>
-              <CardTitle>Informações do Notebook</CardTitle>
+              <CardTitle className="flex items-center gap-2"><BookOpen className="h-5 w-5" />Informações do Notebook</CardTitle>
               <CardDescription>
                 Crie um novo notebook para organizar protocolos, procedimentos ou documentação clínica.
               </CardDescription>
@@ -211,7 +211,7 @@ export default function NewNotebook() {
                 {/* Tags */}
                 <div className="space-y-2">
                   <Label htmlFor="tags">Tags</Label>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row">
                     <Input
                       id="tags"
                       placeholder="Adicionar tag..."
@@ -264,11 +264,11 @@ export default function NewNotebook() {
                 </div>
 
                 {/* Botões */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
                   <Button
                     type="submit"
                     disabled={isLoading || !formData.title.trim()}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 sm:order-2"
                   >
                     <Save className="h-4 w-4" />
                     {isLoading ? 'Criando...' : 'Criar Notebook'}
