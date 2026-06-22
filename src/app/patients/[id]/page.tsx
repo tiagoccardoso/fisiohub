@@ -17,25 +17,7 @@ import { PatientDocumentsTab } from '@/components/patients/PatientDocumentsTab'
 import { PatientAIInsights } from '@/components/patients/PatientAIInsights'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AppPageShell } from '@/components/layouts/app-page-shell'
-
-interface Patient {
-  id: string
-  name: string
-  email: string | null
-  phone: string | null
-  birth_date: string | null
-  created_at: string
-}
-
-// Dados simulados para demonstração
-const mockPatient: Patient = {
-  id: '1',
-  name: 'João Silva',
-  email: 'joao.silva@email.com',
-  phone: '(11) 99999-9999',
-  birth_date: '1985-03-15',
-  created_at: '2024-01-15T10:00:00Z'
-}
+import { Patient } from '@/types/database.types'
 
 function PatientDetailPageContent({
   params
@@ -48,9 +30,16 @@ function PatientDetailPageContent({
   const { data: patient, isLoading, error } = useQuery<Patient>({
     queryKey: ['patient', id],
     queryFn: async () => {
-      // Simular carregamento
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return mockPatient
+      const response = await fetch(`/api/patients/${encodeURIComponent(id)}`, {
+        cache: 'no-store',
+      })
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null)
+        throw new Error(payload?.error || 'Falha ao carregar o perfil do paciente.')
+      }
+
+      return response.json()
     },
   })
 
@@ -96,22 +85,24 @@ function PatientDetailPageContent({
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3 sm:items-center sm:gap-4">
           <Link href="/patients">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="shrink-0">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
             </Button>
           </Link>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{patient.name}</h1>
+          <div className="min-w-0">
+            <h1 className="break-words text-2xl font-bold tracking-tight">{patient.full_name}</h1>
             <p className="text-muted-foreground">
-              Paciente desde {format(new Date(patient.created_at), 'dd/MM/yyyy', { locale: ptBR })}
+              {patient.created_at
+                ? `Paciente desde ${format(new Date(patient.created_at), 'dd/MM/yyyy', { locale: ptBR })}`
+                : 'Data de cadastro não informada'}
             </p>
           </div>
         </div>
-        <Button>
+        <Button className="w-full sm:w-auto">
           <Edit className="mr-2 h-4 w-4" />
           Editar
         </Button>
@@ -172,14 +163,16 @@ function PatientDetailPageContent({
       </Card>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="records">Prontuários</TabsTrigger>
-          <TabsTrigger value="exercises">Plano de Exercícios</TabsTrigger>
-          <TabsTrigger value="progress">Evolução</TabsTrigger>
-          <TabsTrigger value="documents">Documentos</TabsTrigger>
-          <TabsTrigger value="ai-insights">Insights de IA</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="min-w-0 flex-1">
+        <div className="overflow-x-auto pb-1">
+          <TabsList className="inline-flex min-w-max">
+            <TabsTrigger value="records">Prontuários</TabsTrigger>
+            <TabsTrigger value="exercises">Plano de Exercícios</TabsTrigger>
+            <TabsTrigger value="progress">Evolução</TabsTrigger>
+            <TabsTrigger value="documents">Documentos</TabsTrigger>
+            <TabsTrigger value="ai-insights">Insights de IA</TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="records" className="mt-6">
           <PatientRecordsTab patientId={id} />
