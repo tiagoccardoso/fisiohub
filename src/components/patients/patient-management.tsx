@@ -186,9 +186,21 @@ export function PatientManagement({ selectedPatientId, onSelectPatient, onPatien
       </Dialog>
 
       <Dialog open={Boolean(confirmation)} onOpenChange={(open) => !open && !isOperating && setConfirmation(null)}>
-        <DialogContent><DialogHeader><DialogTitle>{confirmation?.type === 'delete' ? 'Excluir paciente?' : confirmation?.patient.status === 'active' ? 'Inativar paciente?' : 'Reativar paciente?'}</DialogTitle><DialogDescription>
-          {confirmation?.type === 'delete' ? 'A exclusão é definitiva e só será concluída se não houver prontuários, consultas, avaliações, documentos ou outros vínculos. Pacientes com histórico devem ser inativados.' : confirmation?.patient.status === 'active' ? 'O cadastro permanecerá disponível no histórico e poderá ser reativado.' : 'O paciente voltará a aparecer como ativo nos fluxos do sistema.'}
-        </DialogDescription></DialogHeader><DialogFooter><Button type="button" variant="outline" disabled={isOperating} onClick={() => setConfirmation(null)}>Cancelar</Button><Button type="button" variant={confirmation?.type === 'delete' ? 'destructive' : 'default'} disabled={isOperating} onClick={confirmOperation}>{isOperating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{confirmation?.type === 'delete' ? 'Confirmar exclusão' : 'Confirmar'}</Button></DialogFooter>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmation?.type === 'delete' ? 'Excluir paciente?' : confirmation?.patient.status === 'active' ? 'Inativar paciente?' : 'Reativar paciente?'}</DialogTitle>
+            <DialogDescription>
+              {confirmation?.type === 'delete' ? 'A exclusão é definitiva e só será concluída se não houver prontuários, consultas, avaliações, documentos ou outros vínculos. Pacientes com histórico devem ser inativados.' : confirmation?.patient.status === 'active' ? 'O cadastro permanecerá disponível no histórico e poderá ser reativado.' : 'O paciente voltará a aparecer como ativo nos fluxos do sistema.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="outline" disabled={isOperating} onClick={() => setConfirmation(null)}>Cancelar</Button>
+            <Button type="button" variant={confirmation?.type === 'delete' ? 'destructive' : 'default'} disabled={isOperating} onClick={confirmOperation}>
+              {isOperating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {confirmation?.type === 'delete' ? 'Confirmar exclusão' : 'Confirmar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
       </Dialog>
     </Card>
   )
