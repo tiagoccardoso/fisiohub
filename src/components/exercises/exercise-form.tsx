@@ -10,45 +10,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, Save } from 'lucide-react'
 import { toast } from 'sonner'
-
-interface Exercise {
-  id?: string
-  name: string
-  description: string
-  category: string
-  anatomical_region: string
-  video_url?: string
-  difficulty_level: number
-  duration?: number
-  muscle_group?: string
-  indications?: string
-  contraindications?: string
-}
+import {
+  exerciseAnatomicalRegions,
+  exerciseCategories,
+  exerciseFormSchema,
+  type Exercise,
+  type ExerciseFormData,
+} from '@/lib/exercise'
 
 interface ExerciseFormProps {
   exercise?: Exercise
-  onSave: (exercise: Exercise) => void
+  onSave: (exercise: ExerciseFormData) => Promise<void>
   onCancel: () => void
 }
-
-const categories = [
-  'Fortalecimento',
-  'Mobilidade',
-  'Alongamento',
-  'Estabilização',
-  'Coordenação',
-  'Equilíbrio',
-  'Funcional'
-]
-
-const anatomicalRegions = [
-  'Cervical',
-  'Membros Superiores',
-  'Tronco',
-  'Membros Inferiores',
-  'Mobilidade Geral',
-  'Core/Estabilização'
-]
 
 const difficultyLevels = [
   { value: 1, label: 'Muito Fácil' },
@@ -59,7 +33,13 @@ const difficultyLevels = [
 ]
 
 export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) {
-  const [formData, setFormData] = useState<Exercise>({
+  const categoryOptions = exercise?.category && !exerciseCategories.includes(exercise.category as typeof exerciseCategories[number])
+    ? [exercise.category, ...exerciseCategories]
+    : exerciseCategories
+  const regionOptions = exercise?.anatomical_region && !exerciseAnatomicalRegions.includes(exercise.anatomical_region as typeof exerciseAnatomicalRegions[number])
+    ? [exercise.anatomical_region, ...exerciseAnatomicalRegions]
+    : exerciseAnatomicalRegions
+  const [formData, setFormData] = useState<ExerciseFormData>({
     name: exercise?.name || '',
     description: exercise?.description || '',
     category: exercise?.category || '',
@@ -69,7 +49,8 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
     duration: exercise?.duration || undefined,
     muscle_group: exercise?.muscle_group || '',
     indications: exercise?.indications || '',
-    contraindications: exercise?.contraindications || ''
+    contraindications: exercise?.contraindications || '',
+    is_favorite: exercise?.is_favorite || false,
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -77,41 +58,26 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.name.trim()) {
-      toast.error('Nome do exercício é obrigatório')
-      return
-    }
-
-    if (!formData.category) {
-      toast.error('Categoria é obrigatória')
-      return
-    }
-
-    if (!formData.anatomical_region) {
-      toast.error('Região anatômica é obrigatória')
+    const validation = exerciseFormSchema.safeParse(formData)
+    if (!validation.success) {
+      toast.error(validation.error.issues[0]?.message || 'Revise os dados informados.')
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      // Simular salvamento
-      await new Promise(resolve => setTimeout(resolve, 1000))
-
-      onSave({
-        ...formData,
-        id: exercise?.id || Date.now().toString()
-      })
+      await onSave(validation.data)
 
       toast.success(exercise ? 'Exercício atualizado!' : 'Exercício criado!')
     } catch (error) {
-      toast.error('Erro ao salvar exercício')
+      toast.error(error instanceof Error ? error.message : 'Erro ao salvar exercício')
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleChange = (field: keyof Exercise, value: any) => {
+  const handleChange = <K extends keyof ExerciseFormData>(field: K, value: ExerciseFormData[K]) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -196,7 +162,7 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
                       <SelectValue placeholder="Selecione a região anatômica" />
                     </SelectTrigger>
                     <SelectContent>
-                      {anatomicalRegions.map((region) => (
+                      {regionOptions.map((region) => (
                         <SelectItem key={region} value={region}>
                           {region}
                         </SelectItem>
@@ -215,7 +181,7 @@ export function ExerciseForm({ exercise, onSave, onCancel }: ExerciseFormProps) 
                       <SelectValue placeholder="Selecione uma categoria" />
                     </SelectTrigger>
                     <SelectContent>
-                      {categories.map((category) => (
+                      {categoryOptions.map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
                         </SelectItem>
