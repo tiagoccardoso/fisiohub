@@ -11,7 +11,7 @@ jest.mock('@/lib/db-neon', () => ({
   withTransaction: jest.fn(),
 }))
 
-const user = { id: 'user-1', clinic_id: 'clinic-1' }
+const user = { id: 'user-1', clinic_id: 'clinic-1', role: 'admin' as const }
 const patientId = '7f95a9a4-87f1-4a29-93df-9763d3320dbe'
 
 function getRequest() {

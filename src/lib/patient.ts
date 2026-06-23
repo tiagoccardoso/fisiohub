@@ -76,3 +76,39 @@ export type CreatedPatient = {
   birth_date: string | null
   cpf: string
 }
+
+export type PatientStatus = 'active' | 'inactive'
+
+export type PatientRecord = CreatedPatient & {
+  gender?: string | null
+  phone?: string | null
+  email?: string | null
+  address?: string | null
+  emergency_contact_name?: string | null
+  emergency_contact_phone?: string | null
+  initial_medical_history?: string | null
+  notes?: string | null
+  status: PatientStatus
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+export type PatientPermissions = {
+  canCreate: boolean
+  canEdit: boolean
+  canChangeStatus: boolean
+  canDelete: boolean
+}
+
+export type PatientListItem = Pick<PatientRecord, 'id' | 'full_name' | 'birth_date' | 'status' | 'created_at'> & {
+  cpf_masked: string
+}
+
+export type PatientListResponse = {
+  items: PatientListItem[]
+  page: number
+  pageSize: number
+  total: number
+  totalPages: number
+  permissions: PatientPermissions
+}

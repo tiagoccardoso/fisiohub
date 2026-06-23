@@ -5,12 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Contact, Loader2, Save, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
-import { createPatient } from '@/lib/api'
+import { createPatient, updatePatient } from '@/lib/api'
 import {
   CreatedPatient,
   formatCpf,
   patientFormSchema,
   PatientFormValues,
+  PatientRecord,
 } from '@/lib/patient'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -20,13 +21,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 
 type PatientFormProps = {
-  onSuccess: (patient: CreatedPatient) => void
+  onSuccess: (patient: CreatedPatient | PatientRecord) => void
   onCancel?: () => void
+  patient?: PatientRecord
 }
 
 const inputClassName = 'w-full'
 
-export function PatientForm({ onSuccess, onCancel }: PatientFormProps) {
+export function PatientForm({ onSuccess, onCancel, patient }: PatientFormProps) {
   const queryClient = useQueryClient()
   const {
     control,
@@ -35,27 +37,30 @@ export function PatientForm({ onSuccess, onCancel }: PatientFormProps) {
     formState: { errors },
   } = useForm<PatientFormValues>({
     resolver: zodResolver(patientFormSchema),
-    defaultValues: {
-      full_name: '',
-      cpf: '',
-      birth_date: '',
-      gender: undefined,
-      phone: '',
-      email: '',
-      address: '',
-      emergency_contact_name: '',
-      emergency_contact_phone: '',
-      initial_medical_history: '',
-      notes: '',
+    defaultValues: patient ? {
+      full_name: patient.full_name,
+      cpf: formatCpf(patient.cpf),
+      birth_date: patient.birth_date?.slice(0, 10) || '',
+      gender: patient.gender || undefined,
+      phone: patient.phone || '',
+      email: patient.email || '',
+      address: patient.address || '',
+      emergency_contact_name: patient.emergency_contact_name || '',
+      emergency_contact_phone: patient.emergency_contact_phone || '',
+      initial_medical_history: patient.initial_medical_history || '',
+      notes: patient.notes || '',
+    } : {
+      full_name: '', cpf: '', birth_date: '', gender: undefined, phone: '', email: '', address: '',
+      emergency_contact_name: '', emergency_contact_phone: '', initial_medical_history: '', notes: '',
     },
   })
 
   const mutation = useMutation({
-    mutationFn: createPatient,
-    onSuccess: async (patient: CreatedPatient) => {
+    mutationFn: (values: PatientFormValues) => patient ? updatePatient(patient.id, values) : createPatient(values),
+    onSuccess: async (result: CreatedPatient | PatientRecord) => {
       await queryClient.invalidateQueries({ queryKey: ['patients'] })
-      toast.success('Paciente cadastrado com sucesso.')
-      onSuccess(patient)
+      toast.success(patient ? 'Cadastro atualizado com sucesso.' : 'Paciente cadastrado com sucesso.')
+      onSuccess(result)
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Não foi possível cadastrar o paciente.')
@@ -181,7 +186,7 @@ export function PatientForm({ onSuccess, onCancel }: PatientFormProps) {
         {onCancel && <Button type="button" variant="outline" onClick={onCancel} disabled={mutation.isPending}>Cancelar</Button>}
         <Button type="submit" disabled={mutation.isPending} className="gap-2">
           {mutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-          {mutation.isPending ? 'Salvando...' : 'Salvar paciente'}
+          {mutation.isPending ? 'Salvando...' : patient ? 'Salvar alterações' : 'Salvar paciente'}
         </Button>
       </div>
     </form>

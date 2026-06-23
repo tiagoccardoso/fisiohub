@@ -1,11 +1,12 @@
 'use client'
 
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Activity, AlertCircle, CheckCircle, Clock, Plus, Save, Search, UserRound } from 'lucide-react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Activity, AlertCircle, CheckCircle, Clock, Save } from 'lucide-react'
 import { toast } from 'sonner'
 import { AppPageShell } from '@/components/layouts/app-page-shell'
 import { PatientForm } from '@/components/patients/patient-form'
+import { PatientManagement } from '@/components/patients/patient-management'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,10 +16,8 @@ import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useDebounce } from '@/hooks/use-debounce'
-import { usePatients } from '@/hooks/use-patients'
 import { PatientProfileRecord } from '@/lib/patient-profile'
-import { CreatedPatient } from '@/lib/patient'
+import { CreatedPatient, PatientRecord } from '@/lib/patient'
 import { AIEngine, AIRecommendation, PatientProfile } from '@/services/ai'
 
 type PatientOption = {
@@ -88,15 +87,13 @@ function formatDateTime(value: string) {
 }
 
 function PatientProfilePageContent() {
-  const [searchTerm, setSearchTerm] = useState('')
+  const queryClient = useQueryClient()
   const [patientId, setPatientId] = useState('')
   const [form, setForm] = useState<ProfileForm>(emptyForm)
   const [isSaving, setIsSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [isPatientFormOpen, setIsPatientFormOpen] = useState(false)
   const [recommendation, setRecommendation] = useState<AIRecommendation | null>(null)
-  const debouncedSearch = useDebounce(searchTerm, 300)
-  const { data: patients = [], isLoading: patientsLoading, error: patientsError } = usePatients(debouncedSearch)
 
   const profileQuery = useQuery<ProfileResponse>({
     queryKey: ['patient-profile', patientId],
@@ -147,13 +144,17 @@ function PatientProfilePageContent() {
     setRecommendation(null)
   }
 
-  const handlePatientCreated = (patient: CreatedPatient) => {
-    setSearchTerm('')
+  const handlePatientCreated = async (patient: CreatedPatient | PatientRecord) => {
     setPatientId(patient.id)
     setForm({ ...emptyForm, age: calculateAge(patient.birth_date) })
     setSaveError('')
     setRecommendation(null)
     setIsPatientFormOpen(false)
+    await queryClient.invalidateQueries({ queryKey: ['patient-management'] })
+  }
+
+  const handlePatientChanged = (changedPatientId?: string) => {
+    if (changedPatientId && changedPatientId === patientId) void profileQuery.refetch()
   }
 
   const handleGenerateRecommendation = () => {
@@ -210,58 +211,12 @@ function PatientProfilePageContent() {
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <UserRound className="h-5 w-5 text-primary" />
-              Paciente
-            </CardTitle>
-            <Button type="button" onClick={() => setIsPatientFormOpen(true)} className="w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" />
-              Cadastrar novo paciente
-            </Button>
-          </div>
-          <CardDescription>Selecione um paciente da clínica para visualizar ou atualizar o perfil.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="relative max-w-xl">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Filtrar pacientes por nome"
-              className="pl-10"
-            />
-          </div>
-
-          <div className="max-w-xl space-y-2">
-            <Label htmlFor="patient">Paciente</Label>
-            <Select value={patientId} onValueChange={handlePatientChange} disabled={patientsLoading}>
-              <SelectTrigger id="patient">
-                <SelectValue placeholder={patientsLoading ? 'Carregando pacientes...' : 'Selecione um paciente'} />
-              </SelectTrigger>
-              <SelectContent>
-                {patients.map((patient: PatientOption) => (
-                  <SelectItem key={patient.id} value={patient.id}>{patient.full_name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {patientsError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Erro ao carregar pacientes</AlertTitle>
-              <AlertDescription>{patientsError instanceof Error ? patientsError.message : 'Tente novamente.'}</AlertDescription>
-            </Alert>
-          )}
-
-          {!patientsLoading && !patientsError && patients.length === 0 && (
-            <p className="text-sm text-muted-foreground">Nenhum paciente encontrado.</p>
-          )}
-        </CardContent>
-      </Card>
+      <PatientManagement
+        selectedPatientId={patientId}
+        onSelectPatient={handlePatientChange}
+        onPatientChanged={handlePatientChanged}
+        onCreatePatient={() => setIsPatientFormOpen(true)}
+      />
 
       {!patientId ? (
         <Card>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-server'
 import { query, queryOne, withTransaction } from '@/lib/db-neon'
 import { patientProfileSchema } from '@/lib/patient-profile'
+import { assertPatientAccess } from '@/lib/patient-access'
 
 const patientIdSchema = patientProfileSchema.shape.patientId
 
@@ -9,9 +10,14 @@ function isUnauthorized(error: unknown) {
   return error instanceof Error && error.message === 'Não autorizado'
 }
 
+function isForbidden(error: unknown) {
+  return error instanceof Error && error.message === 'Permissões insuficientes'
+}
+
 export async function GET(request: NextRequest) {
   try {
     const user = await requireAuth()
+    assertPatientAccess(user, 'canEdit')
     const validation = patientIdSchema.safeParse(request.nextUrl.searchParams.get('patientId'))
 
     if (!validation.success) {
@@ -51,8 +57,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ patient, current, history })
   } catch (error) {
     return NextResponse.json(
-      { error: isUnauthorized(error) ? 'Não autorizado' : 'Erro ao carregar o perfil do paciente.' },
-      { status: isUnauthorized(error) ? 401 : 500 }
+      { error: isUnauthorized(error) ? 'Não autorizado' : isForbidden(error) ? 'Permissões insuficientes' : 'Erro ao carregar o perfil do paciente.' },
+      { status: isUnauthorized(error) ? 401 : isForbidden(error) ? 403 : 500 }
     )
   }
 }
@@ -60,6 +66,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth()
+    assertPatientAccess(user, 'canEdit')
     const validation = patientProfileSchema.safeParse(await request.json())
 
     if (!validation.success) {
@@ -116,8 +123,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result, { status: 201 })
   } catch (error) {
     return NextResponse.json(
-      { error: isUnauthorized(error) ? 'Não autorizado' : 'Erro ao salvar o perfil do paciente.' },
-      { status: isUnauthorized(error) ? 401 : 500 }
+      { error: isUnauthorized(error) ? 'Não autorizado' : isForbidden(error) ? 'Permissões insuficientes' : 'Erro ao salvar o perfil do paciente.' },
+      { status: isUnauthorized(error) ? 401 : isForbidden(error) ? 403 : 500 }
     )
   }
 }

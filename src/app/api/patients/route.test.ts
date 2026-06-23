@@ -1,12 +1,12 @@
 import type { NextRequest } from 'next/server'
 import { requireAuth } from '@/lib/auth-server'
-import { queryOne } from '@/lib/db-neon'
-import { POST } from './route'
+import { query, queryOne } from '@/lib/db-neon'
+import { GET, POST } from './route'
 
 jest.mock('@/lib/auth-server', () => ({ requireAuth: jest.fn() }))
 jest.mock('@/lib/db-neon', () => ({ query: jest.fn(), queryOne: jest.fn() }))
 
-const user = { id: 'user-1', clinic_id: 'clinic-1' }
+const user = { id: 'user-1', clinic_id: 'clinic-1', role: 'admin' as const }
 const patient = {
   full_name: 'Maria Oliveira Silva',
   cpf: '529.982.247-25',
@@ -27,7 +27,33 @@ function requestWith(body: Record<string, unknown>) {
 
 describe('patients API', () => {
   beforeEach(() => {
+    jest.clearAllMocks()
     jest.mocked(requireAuth).mockResolvedValue(user as Awaited<ReturnType<typeof requireAuth>>)
+  })
+
+  it('paginates management results and searches CPF only inside the authenticated clinic', async () => {
+    jest.mocked(queryOne).mockResolvedValueOnce({ count: '1' })
+    jest.mocked(query).mockResolvedValueOnce([{
+      id: 'patient-1', full_name: 'Maria Oliveira Silva', birth_date: '1990-05-20',
+      status: 'active', created_at: '2026-06-22', cpf_masked: '***.***.***-25',
+    }])
+    const request = { url: 'http://localhost/api/patients?management=true&search=529.982&page=2&pageSize=10' } as unknown as NextRequest
+
+    const response = await GET(request)
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload.items[0].cpf_masked).toBe('***.***.***-25')
+    expect(jest.mocked(query).mock.calls[0]?.[1]).toEqual([user.clinic_id, 10, 10, '%529.982%', '%529982%'])
+    expect(jest.mocked(query).mock.calls[0]?.[0]).toContain("regexp_replace(cpf")
+  })
+
+  it('rejects patient management for a role without permission', async () => {
+    jest.mocked(requireAuth).mockResolvedValueOnce({ ...user, role: 'guest' } as Awaited<ReturnType<typeof requireAuth>>)
+    const request = { url: 'http://localhost/api/patients?management=true' } as unknown as NextRequest
+    const response = await GET(request)
+    expect(response.status).toBe(403)
+    expect(query).not.toHaveBeenCalled()
   })
 
   it('normalizes CPF and creates the patient in the authenticated clinic', async () => {
