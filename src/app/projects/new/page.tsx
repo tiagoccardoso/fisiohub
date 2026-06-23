@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { useAuth } from '@/hooks/use-auth-fixed'
-import { supabase } from '@/lib/supabase/client'
+import { fetchJson } from '@/lib/api-client'
 import { toast } from 'sonner'
 import { ArrowLeft, FolderKanban, Save, X, Info } from 'lucide-react'
 
@@ -71,44 +71,19 @@ export default function NewProject() {
     setIsLoading(true)
 
     try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert({
+      await fetchJson('/api/projects', { method: 'POST', body: JSON.stringify({
           title: formData.title,
           description: formData.description,
           status: formData.status,
           priority: formData.priority,
           start_date: formData.start_date || null,
-          end_date: formData.end_date || null,
+          due_date: formData.end_date || null,
           tags: formData.tags,
-          created_by: user.id,
-          metadata: {
-            created_at: new Date().toISOString(),
-            project_type: 'clinical'
-          }
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      // Log da atividade
-      await supabase
-        .from('activity_logs')
-        .insert({
-          user_id: user.id,
-          action: 'create',
-          entity_type: 'project',
-          entity_id: data.id,
-          details: {
-            title: formData.title,
-            status: formData.status,
-            priority: formData.priority
-          }
-        })
+          category: 'clinical',
+        }) })
 
       toast.success('Projeto criado com sucesso!')
-      router.push(`/projects/${data.id}`)
+      router.push('/projects')
     } catch (error: any) {
       console.error('Erro ao criar projeto:', error)
       toast.error('Erro ao criar projeto: ' + error.message)

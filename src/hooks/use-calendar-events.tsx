@@ -1,290 +1,65 @@
 'use client'
 
 import React from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/hooks/use-auth'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { fetchJson } from '@/lib/api-client'
 
 export interface CalendarEvent {
-  id: string
-  title: string
-  description?: string
-  start_time: string
-  end_time: string
-  event_type: 'appointment' | 'supervision' | 'meeting' | 'break'
-  location?: string
-  attendees: string[]
-  created_by: string
-  created_at: string
-  updated_at: string
+  id: string; title: string; description?: string; start_time: string; end_time: string;
+  event_type: 'appointment' | 'supervision' | 'meeting' | 'break'; status?: string; location?: string;
+  attendees: string[]; created_by: string; created_at: string; updated_at: string
 }
+export interface CreateEventData { title: string; description?: string; start_time: string; end_time: string; event_type: CalendarEvent['event_type']; location?: string; attendees?: string[] }
+export interface UpdateEventData extends Partial<CreateEventData> { id: string }
 
-export interface CreateEventData {
-  title: string
-  description?: string
-  start_time: string
-  end_time: string
-  event_type: 'appointment' | 'supervision' | 'meeting' | 'break'
-  location?: string
-  attendees?: string[]
-}
+const normalize = <T extends CreateEventData>(event: T) => ({
+  ...event,
+  start_time: new Date(event.start_time).toISOString(),
+  end_time: new Date(event.end_time).toISOString(),
+  attendees: event.attendees || [],
+})
 
-export interface UpdateEventData extends Partial<CreateEventData> {
-  id: string
-}
-
-// Hook para buscar eventos
 export function useCalendarEvents() {
-  const { user } = useAuth()
-
-  return useQuery({
-    queryKey: ['calendar-events', user?.id],
-    queryFn: async () => {
-      if (!user) throw new Error('User not authenticated')
-
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .select('*')
-        .or(`created_by.eq.${user.id},attendees.cs.{${user.id}}`)
-        .order('start_time', { ascending: true })
-
-      if (error) throw error
-      return data as CalendarEvent[]
-    },
-    enabled: !!user,
-    staleTime: 1000 * 60 * 5, // 5 minutos
-  })
+  return useQuery<CalendarEvent[], Error>({ queryKey: ['calendar-events'], queryFn: () => fetchJson('/api/calendar-events'), staleTime: 30_000 })
 }
-
-// Hook para buscar eventos de um período específico
 export function useCalendarEventsByRange(startDate: Date, endDate: Date) {
-  const { user } = useAuth()
-
-  return useQuery({
-    queryKey: ['calendar-events-range', user?.id, startDate.toISOString(), endDate.toISOString()],
-    queryFn: async () => {
-      if (!user) throw new Error('User not authenticated')
-
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .select('*')
-        .or(`created_by.eq.${user.id},attendees.cs.{${user.id}}`)
-        .gte('start_time', startDate.toISOString())
-        .lte('end_time', endDate.toISOString())
-        .order('start_time', { ascending: true })
-
-      if (error) throw error
-      return data as CalendarEvent[]
-    },
-    enabled: !!user,
-    staleTime: 1000 * 60 * 5,
+  return useQuery<CalendarEvent[], Error>({
+    queryKey: ['calendar-events', startDate.toISOString(), endDate.toISOString()],
+    queryFn: () => fetchJson(`/api/calendar-events?start=${encodeURIComponent(startDate.toISOString())}&end=${encodeURIComponent(endDate.toISOString())}`),
+    staleTime: 30_000,
   })
 }
-
-// Hook para criar evento
+function useInvalidate() {
+  const client = useQueryClient()
+  return () => { client.invalidateQueries({ queryKey: ['calendar-events'] }); client.invalidateQueries({ queryKey: ['dashboard-data'] }); client.invalidateQueries({ queryKey: ['analyticsSummary'] }) }
+}
 export function useCreateEvent() {
-  const queryClient = useQueryClient()
-  const { user } = useAuth()
-
-  return useMutation({
-    mutationFn: async (eventData: CreateEventData) => {
-      if (!user) throw new Error('User not authenticated')
-
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .insert({
-          ...eventData,
-          created_by: user.id,
-          attendees: eventData.attendees || [],
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return data as CalendarEvent
-    },
-    onSuccess: (newEvent) => {
-      // Invalidar cache dos eventos
-      queryClient.invalidateQueries({ queryKey: ['calendar-events'] })
-
-      // Criar notificação para participantes
-      if (newEvent.attendees.length > 0) {
-        createEventNotifications(newEvent)
-      }
-
-      toast.success('Evento criado com sucesso!')
-    },
-    onError: (error) => {
-      console.error('Erro ao criar evento:', error)
-      toast.error('Erro ao criar evento. Tente novamente.')
-    },
-  })
+  const invalidate = useInvalidate()
+  return useMutation<CalendarEvent, Error, CreateEventData>({ mutationFn: (input) => fetchJson('/api/calendar-events', { method: 'POST', body: JSON.stringify(normalize(input)) }), onSuccess: () => { invalidate(); toast.success('Evento criado com sucesso!') }, onError: (e) => toast.error(e.message) })
 }
-
-// Hook para atualizar evento
 export function useUpdateEvent() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async (eventData: UpdateEventData) => {
-      const { id, ...updateData } = eventData
-
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .update(updateData)
-        .eq('id', id)
-        .select()
-        .single()
-
-      if (error) throw error
-      return data as CalendarEvent
-    },
-    onSuccess: (updatedEvent) => {
-      queryClient.invalidateQueries({ queryKey: ['calendar-events'] })
-      toast.success('Evento atualizado com sucesso!')
-    },
-    onError: (error) => {
-      console.error('Erro ao atualizar evento:', error)
-      toast.error('Erro ao atualizar evento. Tente novamente.')
-    },
+  const invalidate = useInvalidate()
+  return useMutation<CalendarEvent, Error, UpdateEventData>({
+    mutationFn: ({ id, ...input }) => fetchJson(`/api/calendar-events/${id}`, { method: 'PUT', body: JSON.stringify(normalize(input as CreateEventData)) }),
+    onSuccess: () => { invalidate(); toast.success('Evento atualizado com sucesso!') }, onError: (e) => toast.error(e.message),
   })
 }
-
-// Hook para deletar evento
 export function useDeleteEvent() {
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: async (eventId: string) => {
-      const { error } = await supabase
-        .from('calendar_events')
-        .delete()
-        .eq('id', eventId)
-
-      if (error) throw error
-      return eventId
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar-events'] })
-      toast.success('Evento excluído com sucesso!')
-    },
-    onError: (error) => {
-      console.error('Erro ao excluir evento:', error)
-      toast.error('Erro ao excluir evento. Tente novamente.')
-    },
-  })
+  const invalidate = useInvalidate()
+  return useMutation<{ ok: true }, Error, string>({ mutationFn: (id) => fetchJson(`/api/calendar-events/${id}`, { method: 'DELETE' }), onSuccess: () => { invalidate(); toast.success('Evento excluído!') }, onError: (e) => toast.error(e.message) })
 }
-
-// Hook para buscar usuários para participantes
 export function useUsers() {
-  return useQuery({
-    queryKey: ['users'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, full_name, email, avatar_url, role')
-        .order('full_name', { ascending: true })
-
-      if (error) throw error
-      return data
-    },
-    staleTime: 1000 * 60 * 10, // 10 minutos
-  })
+  return useQuery<Array<{ id: string; full_name: string; email: string; avatar_url?: string; role: string; is_active?: boolean }>, Error>({ queryKey: ['calendar-users'], queryFn: async () => (await fetchJson<Array<{ id: string; full_name: string; email: string; avatar_url?: string; role: string; is_active?: boolean }>>('/api/team')).filter((user) => user.is_active !== false), staleTime: 60_000 })
 }
-
-// Função auxiliar para criar notificações de evento
-async function createEventNotifications(event: CalendarEvent) {
-  try {
-    const notifications = event.attendees.map(attendeeId => ({
-      user_id: attendeeId,
-      title: 'Novo evento agendado',
-      message: `Você foi convidado para: ${event.title}`,
-      type: 'info' as const,
-      action_url: `/calendar?event=${event.id}`,
-    }))
-
-    await supabase
-      .from('notifications')
-      .insert(notifications)
-  } catch (error) {
-    console.error('Erro ao criar notificações:', error)
-  }
-}
-
-// Hook para eventos em tempo real
 export function useRealtimeEvents() {
-  const queryClient = useQueryClient()
-  const { user } = useAuth()
-
+  const client = useQueryClient()
   React.useEffect(() => {
-    if (!user) return
-
-    const channelName = `calendar_events_changes_${user.id}_${Date.now()}_${Math.random().toString(36).slice(2)}`
-
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'calendar_events',
-        },
-        (payload: any) => {
-          console.log('Calendar event change:', payload)
-          queryClient.invalidateQueries({ queryKey: ['calendar-events'] })
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [user, queryClient])
+    const timer = window.setInterval(() => client.invalidateQueries({ queryKey: ['calendar-events'] }), 60_000)
+    return () => window.clearInterval(timer)
+  }, [client])
 }
-
-// Hook para estatísticas de eventos
 export function useEventStats() {
-  const { user } = useAuth()
-
-  return useQuery({
-    queryKey: ['event-stats', user?.id],
-    queryFn: async () => {
-      if (!user) throw new Error('User not authenticated')
-
-      const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .select('event_type, start_time, end_time')
-        .or(`created_by.eq.${user.id},attendees.cs.{${user.id}}`)
-        .gte('start_time', startOfMonth.toISOString())
-        .lte('end_time', endOfMonth.toISOString())
-
-      if (error) throw error
-
-      const stats = {
-        total: data.length,
-        byType: data.reduce((acc: Record<string, number>, event: any) => {
-          acc[event.event_type] = (acc[event.event_type] || 0) + 1
-          return acc
-        }, {} as Record<string, number>),
-        thisWeek: data.filter((event: any) => {
-          const eventDate = new Date(event.start_time)
-          const weekStart = new Date(now)
-          weekStart.setDate(now.getDate() - now.getDay())
-          const weekEnd = new Date(weekStart)
-          weekEnd.setDate(weekStart.getDate() + 6)
-          return eventDate >= weekStart && eventDate <= weekEnd
-        }).length,
-      }
-
-      return stats
-    },
-    enabled: !!user,
-    staleTime: 1000 * 60 * 5,
-  })
+  const { data = [] } = useCalendarEvents()
+  return { data: { total: data.length, byType: data.reduce<Record<string, number>>((acc, event) => { acc[event.event_type] = (acc[event.event_type] || 0) + 1; return acc }, {}) } }
 }

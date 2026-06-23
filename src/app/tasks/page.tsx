@@ -6,8 +6,8 @@ import { AppPageShell } from '@/components/layouts/app-page-shell';
 export const dynamic = 'force-dynamic';
 
 async function TasksPageContent() {
-  const supabase = await createServerAuthClient();
-  const { data: { session } } = await supabase.auth.getSession();
+  const authClient = await createServerAuthClient();
+  const { data: { session } } = await authClient.auth.getSession();
 
   if (!session) {
     redirect('/auth/login?message=Please log in to view tasks');

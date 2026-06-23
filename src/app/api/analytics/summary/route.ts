@@ -1,115 +1,70 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth-server'
-import { query } from '@/lib/db-neon'
+import { query, queryOne } from '@/lib/db-neon'
+import { apiError } from '@/lib/tenant-api'
 
 export async function GET() {
   try {
     const user = await requireAuth()
-
-    const [totalPatientsRows, appointmentsThisMonthRows, newPatientsRows, statusRows, teamRows, trendRows] = await Promise.all([
-      query<{ count: string }>('select count(*)::text as count from public.patients where status <> $1 and clinic_id = $2', ['archived', user.clinic_id]),
-      query<{ count: string }>(
-        `select count(*)::text as count
-           from public.calendar_events
-          where event_type = 'appointment'
-            and start_time >= date_trunc('month', now())
-            and clinic_id = $1`,
-        [user.clinic_id]
-      ),
-      query<{ count: string }>(
-        `select count(*)::text as count
-           from public.patients
-          where created_at >= date_trunc('month', now())
-            and status <> 'archived'
-            and clinic_id = $1`,
-        [user.clinic_id]
-      ),
+    const clinicId = user.clinic_id
+    const [counts, statuses, team, trend, operational] = await Promise.all([
+      queryOne<{ total: string; appointments: string; new_patients: string; previous_new_patients: string; previous_appointments: string }>(
+        `select
+          (select count(*) from public.patients where clinic_id = $1 and status <> 'archived')::text as total,
+          (select count(*) from public.calendar_events where clinic_id = $1 and start_time >= date_trunc('month', now())
+            and event_type in ('appointment','evaluation','return','session'))::text as appointments,
+          (select count(*) from public.patients where clinic_id = $1 and status <> 'archived' and created_at >= date_trunc('month', now()))::text as new_patients,
+          (select count(*) from public.patients where clinic_id = $1 and status <> 'archived'
+            and created_at >= date_trunc('month', now()) - interval '1 month' and created_at < date_trunc('month', now()))::text as previous_new_patients,
+          (select count(*) from public.calendar_events where clinic_id = $1
+            and start_time >= date_trunc('month', now()) - interval '1 month' and start_time < date_trunc('month', now())
+            and event_type in ('appointment','evaluation','return','session'))::text as previous_appointments`, [clinicId]),
       query<{ status: string; count: string }>(
-        `select coalesce(status::text, 'scheduled') as status, count(*)::text as count
-           from public.appointments
-          where clinic_id = $1
-          group by coalesce(status::text, 'scheduled')
-          order by count(*) desc`,
-        [user.clinic_id]
-      ),
-      query<{ full_name: string; role: string }>(
-        `select full_name, role::text as role
-           from public.users
-          where is_active = true
-            and clinic_id = $1
-            and role in ('mentor', 'intern', 'professional', 'therapist', 'admin')
-          order by full_name
-          limit 10`,
-        [user.clinic_id]
-      ),
+        `select status, count(*)::text as count from public.calendar_events
+          where clinic_id = $1 and event_type in ('appointment','evaluation','return','session')
+          group by status order by count(*) desc`, [clinicId]),
+      query<{ professional: string; role: string; sessions: string }>(
+        `select u.full_name as professional, u.role::text as role,
+                count(e.id) filter (where e.status = 'completed')::text as sessions
+           from public.users u left join public.calendar_events e
+             on e.clinic_id = u.clinic_id and coalesce(e.professional_id, e.created_by) = u.id
+            and e.start_time >= date_trunc('month', now())
+          where u.clinic_id = $1 and u.is_active = true
+            and u.role in ('admin','mentor','professional','therapist')
+          group by u.id, u.full_name, u.role order by count(e.id) desc, u.full_name limit 20`, [clinicId]),
       query<{ month: string; appointments: string; new_patients: string }>(
-        `with months as (
-           select date_trunc('month', now()) - (interval '1 month' * generate_series(5, 0, -1)) as month_start
-         )
-         select to_char(month_start, 'Mon') as month,
-                coalesce((select count(*) from public.calendar_events ce
-                           where ce.event_type = 'appointment'
-                             and ce.start_time >= month_start
-                             and ce.start_time < month_start + interval '1 month'
-                             and ce.clinic_id = $1), 0)::text as appointments,
-                coalesce((select count(*) from public.patients p
-                           where p.created_at >= month_start
-                             and p.created_at < month_start + interval '1 month'
-                             and p.status <> 'archived'
-                             and p.clinic_id = $1), 0)::text as new_patients
-           from months
-          order by month_start`,
-        [user.clinic_id]
-      ),
+        `with months as (select generate_series(date_trunc('month', now()) - interval '5 months', date_trunc('month', now()), interval '1 month') m)
+         select to_char(m, 'MM/YYYY') as month,
+          (select count(*) from public.calendar_events e where e.clinic_id = $1 and e.start_time >= m and e.start_time < m + interval '1 month'
+            and e.event_type in ('appointment','evaluation','return','session'))::text as appointments,
+          (select count(*) from public.patients p where p.clinic_id = $1 and p.created_at >= m and p.created_at < m + interval '1 month'
+            and p.status <> 'archived')::text as new_patients from months order by m`, [clinicId]),
+      queryOne<{ avg_duration: string | null; total: string; cancelled: string; professional_days: string; completed: string }>(
+        `select round(avg(extract(epoch from (end_time - start_time)) / 60) filter (where status = 'completed'), 1)::text as avg_duration,
+          count(*)::text as total, count(*) filter (where status = 'cancelled')::text as cancelled,
+          count(distinct (coalesce(professional_id, created_by)::text || ':' || start_time::date::text))::text as professional_days,
+          count(*) filter (where status = 'completed')::text as completed
+         from public.calendar_events where clinic_id = $1 and start_time >= date_trunc('month', now())
+           and event_type in ('appointment','evaluation','return','session')`, [clinicId]),
     ])
-
-    const appointmentStatusDistribution = statusRows.map((item) => ({
-      status: item.status,
-      count: Number(item.count),
-    }))
-    const totalAppointments = appointmentStatusDistribution.reduce((sum, item) => sum + item.count, 0)
-    const completedAppointments = appointmentStatusDistribution.find((item) => item.status === 'completed')?.count || 0
-    const attendanceRate = totalAppointments > 0 ? Math.round((completedAppointments / totalAppointments) * 100) : 0
-
+    const total = statuses.reduce((sum, row) => sum + Number(row.count), 0)
+    const completed = statuses.find((row) => row.status === 'completed')?.count || '0'
+    const monthTotal = Number(operational?.total || 0)
+    const professionalDays = Number(operational?.professional_days || 0)
     return NextResponse.json({
-      totalPatients: Number(totalPatientsRows[0]?.count ?? 0),
-      appointmentsThisMonth: Number(appointmentsThisMonthRows[0]?.count ?? 0),
-      newPatientsThisMonth: Number(newPatientsRows[0]?.count ?? 0),
-      appointmentStatusDistribution,
-      attendanceRate,
-      avgSessionDuration: 45,
-      teamProductivity: teamRows.map((user) => ({
-        professional: user.full_name,
-        role: user.role,
-        sessions: 0,
-      })),
-      monthlyTrend: trendRows.map((row) => ({
-        month: row.month,
-        appointments: Number(row.appointments),
-        newPatients: Number(row.new_patients),
-      })),
+      totalPatients: Number(counts?.total || 0), appointmentsThisMonth: Number(counts?.appointments || 0),
+      newPatientsThisMonth: Number(counts?.new_patients || 0), previousAppointments: Number(counts?.previous_appointments || 0),
+      previousNewPatients: Number(counts?.previous_new_patients || 0),
+      appointmentStatusDistribution: statuses.map((row) => ({ status: row.status, count: Number(row.count) })),
+      attendanceRate: total ? Math.round(Number(completed) / total * 100) : 0,
+      avgSessionDuration: operational?.avg_duration ? Number(operational.avg_duration) : null,
+      teamProductivity: team.map((row) => ({ ...row, sessions: Number(row.sessions) })),
+      monthlyTrend: trend.map((row) => ({ month: row.month, appointments: Number(row.appointments), newPatients: Number(row.new_patients) })),
       operationalMetrics: {
-        avgSessionDuration: 45,
-        scheduleOccupancy: 0,
-        cancellationRate: 0,
-        sessionsPerProfessionalPerDay: 0,
+        avgSessionDuration: operational?.avg_duration ? Number(operational.avg_duration) : null,
+        cancellationRate: monthTotal ? Math.round(Number(operational?.cancelled || 0) / monthTotal * 100) : 0,
+        sessionsPerProfessionalPerDay: professionalDays ? Number((Number(operational?.completed || 0) / professionalDays).toFixed(1)) : 0,
       },
     })
-  } catch (error) {
-    const unauthorized = error instanceof Error && error.message === 'Não autorizado'
-    console.error('[analytics/summary] error', error)
-    return NextResponse.json(
-      {
-        error: unauthorized ? 'Não autorizado' : 'Erro ao buscar resumo de análises no Neon.',
-        totalPatients: 0,
-        appointmentsThisMonth: 0,
-        newPatientsThisMonth: 0,
-        appointmentStatusDistribution: [],
-        attendanceRate: 0,
-        teamProductivity: [],
-        monthlyTrend: [],
-      },
-      { status: unauthorized ? 401 : 500 }
-    )
-  }
+  } catch (error) { return apiError(error, 'Erro ao buscar análises no Neon.') }
 }

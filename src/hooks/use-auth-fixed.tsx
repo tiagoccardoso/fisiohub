@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-export type AppUser = { id: string; clinic_id: string; clinic_name: string; email: string; full_name: string | null; role: string; avatar_url?: string | null; phone?: string | null; crefito?: string | null; specialty?: string | null; university?: string | null; semester?: number | null; created_at?: string; updated_at?: string };
+export type AppUser = { id: string; clinic_id: string; clinic_name: string; email: string; full_name: string | null; role: string; avatar_url?: string | null; phone?: string | null; crefito?: string | null; specialty?: string | null; university?: string | null; semester?: number | null; preferences?: Record<string, string | number | boolean | null>; created_at?: string; updated_at?: string };
 type Session = { user: AppUser };
 
 type AuthActionResult = { error: Error | null };

@@ -1,152 +1,50 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase/client';
-import { toast } from 'sonner';
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { fetchJson } from '@/lib/api-client'
+import type { Notebook } from './use-notebooks-query'
 
-interface Notebook {
-  id: string;
-  title: string;
-  description: string | null;
-  content: string | null;
-  template_type: string | null;
-  page_count: number;
-  created_at: string;
-  updated_at: string;
-  owner_id: string;
-  owner?: {
-    full_name: string;
-    email: string;
-  };
-  is_public?: boolean;
+interface NotebookInput {
+  title: string
+  description?: string
+  content?: string
+  template_type?: string
+  icon?: string
+  color?: string
+  category?: string
+  is_public?: boolean
 }
 
-interface CreateNotebookInput {
-  title: string;
-  description?: string;
-  content?: string;
-  template_type?: string;
-  icon?: string;
-  color?: string;
-  category?: string;
-  is_public?: boolean;
-}
-
-interface UpdateNotebookInput {
-  id: string;
-  title?: string;
-  description?: string;
-  content?: string;
-  template_type?: string;
-  icon?: string;
-  color?: string;
-  category?: string;
-  is_public?: boolean;
+function useRefresh() {
+  const client = useQueryClient()
+  return () => {
+    client.invalidateQueries({ queryKey: ['notebooks'] })
+    client.invalidateQueries({ queryKey: ['dashboard-data'] })
+  }
 }
 
 export function useCreateNotebookMutation() {
-  const queryClient = useQueryClient();
-
-  return useMutation<Notebook, Error, CreateNotebookInput>({
-    mutationFn: async (newNotebookData) => {
-      const content = newNotebookData.content ?? '';
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Mock mode fallback
-      if (false) {
-        const mockNotebook: Notebook = {
-          id: Date.now().toString(),
-          title: newNotebookData.title,
-          description: newNotebookData.description || null,
-          content: content || null,
-          template_type: newNotebookData.template_type || null,
-          page_count: content ? Math.ceil(content.length / 1000) : 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          owner_id: user.id,
-          owner: { full_name: user.email || 'Mock User', email: user.email || 'mock@example.com' },
-          is_public: newNotebookData.is_public || false,
-        };
-        return mockNotebook;
-      }
-
-      const { data: insertData, error } = await supabase
-        .from('notebooks')
-        .insert({
-          ...newNotebookData,
-          created_by: user.id, // Assumindo que a coluna é created_by
-          updated_by: user.id, // Assumindo que a coluna é updated_by
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return insertData as Notebook;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notebooks'] });
-      toast.success('Notebook criado com sucesso!');
-    },
-    onError: (error) => {
-      toast.error('Erro ao criar notebook: ' + error.message);
-    },
-  });
+  const refresh = useRefresh()
+  return useMutation<Notebook, Error, NotebookInput>({
+    mutationFn: (input) => fetchJson('/api/notebooks', { method: 'POST', body: JSON.stringify(input) }),
+    onSuccess: () => { refresh(); toast.success('Caderno criado com sucesso!') },
+    onError: (error) => toast.error(error.message),
+  })
 }
 
 export function useUpdateNotebookMutation() {
-  const queryClient = useQueryClient();
+  const refresh = useRefresh()
+  return useMutation<Notebook, Error, NotebookInput & { id: string }>({
+    mutationFn: ({ id, ...input }) => fetchJson(`/api/notebooks/${id}`, { method: 'PUT', body: JSON.stringify(input) }),
+    onSuccess: () => { refresh(); toast.success('Caderno atualizado com sucesso!') },
+    onError: (error) => toast.error(error.message),
+  })
+}
 
-  return useMutation<Notebook, Error, UpdateNotebookInput>({
-    mutationFn: async (updatedNotebookData) => {
-      const { id, ...dataToUpdate } = updatedNotebookData;
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Mock mode fallback
-      if (false) {
-        const content = dataToUpdate.content ?? '';
-        // Simular atualização no mock data (não persistente, apenas para demonstração)
-        const mockNotebook: Notebook = {
-          id: id,
-          title: dataToUpdate.title || 'Mock Notebook',
-          description: dataToUpdate.description || null,
-          content: content || null,
-          template_type: dataToUpdate.template_type || null,
-          page_count: content ? Math.ceil(content.length / 1000) : 0,
-          created_at: new Date().toISOString(), // Manter o original em um cenário real
-          updated_at: new Date().toISOString(),
-          owner_id: user.id,
-          owner: { full_name: user.email || 'Mock User', email: user.email || 'mock@example.com' },
-          is_public: dataToUpdate.is_public || false,
-        };
-        return mockNotebook;
-      }
-
-      const { data: updateData, error } = await supabase
-        .from('notebooks')
-        .update({
-          ...dataToUpdate,
-          updated_by: user.id, // Assumindo que a coluna é updated_by
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return updateData as Notebook;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notebooks'] });
-      toast.success('Notebook atualizado com sucesso!');
-    },
-    onError: (error) => {
-      toast.error('Erro ao atualizar notebook: ' + error.message);
-    },
-  });
+export function useDeleteNotebookMutation() {
+  const refresh = useRefresh()
+  return useMutation<{ ok: true }, Error, string>({
+    mutationFn: (id) => fetchJson(`/api/notebooks/${id}`, { method: 'DELETE' }),
+    onSuccess: () => { refresh(); toast.success('Caderno excluído com sucesso!') },
+    onError: (error) => toast.error(error.message),
+  })
 }

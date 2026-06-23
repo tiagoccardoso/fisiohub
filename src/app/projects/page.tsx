@@ -32,7 +32,8 @@ import {
   Play,
   Pause,
   Archive,
-  Download
+  Download,
+  Trash2
 } from 'lucide-react'
 import { format, isAfter } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
@@ -41,8 +42,10 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useProjectsQuery, useTasksQuery, useProjectStatsQuery, Project, Task, ProjectStats, TeamMember } from '@/hooks/use-projects-data'
-import { useCreateProjectMutation, useUpdateProjectMutation, useCreateTaskMutation, useUpdateTaskMutation } from '@/hooks/use-project-mutations'
+import { useCreateProjectMutation, useUpdateProjectMutation, useDeleteProjectMutation, useCreateTaskMutation, useUpdateTaskMutation, useDeleteTaskMutation } from '@/hooks/use-project-mutations'
 import { Loading } from '@/components/ui/loading'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 
 const columns = [
   { id: 'todo', title: 'A Fazer', color: 'bg-slate-100 border-slate-300' },
@@ -158,14 +161,17 @@ function SortableTask({ task, onClick }: { task: Task; onClick: (task: Task) => 
 
 export default function ProjectsPage() {
   const { user } = useAuth()
+  const canManageProjects = user?.role === 'admin' || user?.role === 'mentor'
   const { data: projects, isLoading: isLoadingProjects, error: projectsError } = useProjectsQuery()
   const { data: tasks, isLoading: isLoadingTasks, error: tasksError } = useTasksQuery()
   const { data: stats, isLoading: isLoadingStats, error: statsError } = useProjectStatsQuery()
 
   const createProjectMutation = useCreateProjectMutation()
   const updateProjectMutation = useUpdateProjectMutation()
+  const deleteProjectMutation = useDeleteProjectMutation()
   const createTaskMutation = useCreateTaskMutation()
   const updateTaskMutation = useUpdateTaskMutation()
+  const deleteTaskMutation = useDeleteTaskMutation()
 
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
@@ -174,6 +180,8 @@ export default function ProjectsPage() {
   const [showProjectForm, setShowProjectForm] = useState(false)
   const [showTaskForm, setShowTaskForm] = useState(false)
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
+  const [editingProjectId, setEditingProjectId] = useState<string | null>(null)
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
 
   // Form states
   const [projectForm, setProjectForm] = useState({
@@ -203,9 +211,12 @@ export default function ProjectsPage() {
 
   const createProject = async () => {
     if (!projectForm.title) return
-    createProjectMutation.mutate(projectForm, {
+    const mutation = editingProjectId ? updateProjectMutation : createProjectMutation
+    mutation.mutate({ ...(editingProjectId ? { id: editingProjectId } : {}), ...projectForm } as any, {
       onSuccess: () => {
         setShowProjectForm(false)
+        setEditingProjectId(null)
+        setSelectedProject(null)
         resetProjectForm()
       }
     })
@@ -213,14 +224,43 @@ export default function ProjectsPage() {
 
   const createTask = async () => {
     if (!taskForm.title || !taskForm.project_id) return
-    createTaskMutation.mutate({
+    const mutation = editingTaskId ? updateTaskMutation : createTaskMutation
+    mutation.mutate({ ...(editingTaskId ? { id: editingTaskId } : {}),
       ...taskForm,
-    }, {
+      assigned_to: taskForm.assigned_to || undefined,
+      due_date: taskForm.due_date || undefined,
+    } as any, {
       onSuccess: () => {
         setShowTaskForm(false)
+        setEditingTaskId(null)
+        setSelectedTask(null)
         resetTaskForm()
       }
     })
+  }
+
+  const openProjectForm = (project?: Project) => {
+    if (project) {
+      setEditingProjectId(project.id)
+      setProjectForm({ title: project.title, description: project.description || '', status: project.status, priority: project.priority,
+        due_date: project.due_date || '', category: project.category, budget: Number(project.budget || 0), tags: project.tags || [] })
+    } else {
+      setEditingProjectId(null)
+      resetProjectForm()
+    }
+    setShowProjectForm(true)
+  }
+
+  const openTaskForm = (task?: Task) => {
+    if (task) {
+      setEditingTaskId(task.id)
+      setTaskForm({ title: task.title, description: task.description || '', status: task.status, priority: task.priority,
+        assigned_to: task.assigned_to || '', due_date: task.due_date?.slice(0, 10) || '', estimated_hours: task.estimated_hours || 0, project_id: task.project_id })
+    } else {
+      setEditingTaskId(null)
+      resetTaskForm()
+    }
+    setShowTaskForm(true)
   }
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -524,6 +564,8 @@ export default function ProjectsPage() {
     <AuthGuard>
       <DashboardLayout>
         <div className="flex-1 space-y-6 p-6">
+          {isLoading && <Card><CardContent className="py-12 text-center text-muted-foreground">Carregando projetos e tarefas...</CardContent></Card>}
+          {error && <Card className="border-destructive"><CardContent className="py-4 text-destructive">{error.message}</CardContent></Card>}
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -537,7 +579,7 @@ export default function ProjectsPage() {
                 <Download className="mr-2 h-4 w-4" />
                 Exportar
               </Button>
-              <Button onClick={() => setShowProjectForm(true)}>
+              <Button onClick={() => openProjectForm()} disabled={!canManageProjects} title={!canManageProjects ? 'Somente administradores e mentores podem criar projetos' : undefined}>
                 <Plus className="mr-2 h-4 w-4" />
                 Novo Projeto
               </Button>
@@ -545,10 +587,10 @@ export default function ProjectsPage() {
           </div>
 
           {/* Stats Cards */}
-          {renderStatsCards()}
+          {!isLoading && renderStatsCards()}
 
           {/* Main Content */}
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
+          {!isLoading && <Tabs value={activeTab} onValueChange={setActiveTab}>
             <div className="flex items-center justify-between">
               <TabsList>
                 <TabsTrigger value="overview">Visão Geral</TabsTrigger>
@@ -582,7 +624,7 @@ export default function ProjectsPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold">Quadro Kanban</h3>
-                  <Button onClick={() => setShowTaskForm(true)}>
+                  <Button onClick={() => openTaskForm()}>
                     <Plus className="mr-2 h-4 w-4" />
                     Nova Tarefa
                   </Button>
@@ -675,9 +717,60 @@ export default function ProjectsPage() {
                 </Card>
               </div>
             </TabsContent>
-          </Tabs>
+          </Tabs>}
+
+          <Dialog open={!!selectedProject && !showProjectForm} onOpenChange={(open) => !open && setSelectedProject(null)}>
+            <DialogContent>
+              <DialogHeader><DialogTitle>{selectedProject?.title}</DialogTitle></DialogHeader>
+              <div className="space-y-3 text-sm">
+                <p className="whitespace-pre-wrap text-muted-foreground">{selectedProject?.description || 'Sem descrição.'}</p>
+                <div className="flex flex-wrap gap-2"><Badge>{selectedProject?.status}</Badge><Badge variant="outline">{selectedProject?.priority}</Badge><Badge variant="outline">{selectedProject?.category}</Badge></div>
+                <p>Prazo: {selectedProject?.due_date ? format(new Date(selectedProject.due_date), 'dd/MM/yyyy') : 'Não informado'}</p>
+                <p>Progresso: {selectedProject ? getProjectProgress(selectedProject.id) : 0}%</p>
+              </div>
+              <DialogFooter>
+                <Button variant="destructive" disabled={!canManageProjects || deleteProjectMutation.isPending} onClick={() => {
+                  if (selectedProject && window.confirm(`Excluir o projeto "${selectedProject.title}" e suas tarefas?`)) deleteProjectMutation.mutate(selectedProject.id, { onSuccess: () => setSelectedProject(null) })
+                }}><Trash2 className="mr-2 h-4 w-4" />Excluir</Button>
+                <Button disabled={!canManageProjects} onClick={() => selectedProject && openProjectForm(selectedProject)}><Edit className="mr-2 h-4 w-4" />Editar</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={showProjectForm} onOpenChange={(open) => { setShowProjectForm(open); if (!open) setEditingProjectId(null) }}>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
+              <DialogHeader><DialogTitle>{editingProjectId ? 'Editar projeto' : 'Novo projeto'}</DialogTitle></DialogHeader>
+              <div className="grid gap-4">
+                <FormField label="Título *"><Input value={projectForm.title} onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })} /></FormField>
+                <FormField label="Descrição"><Textarea value={projectForm.description} onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })} /></FormField>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField label="Situação"><Select value={projectForm.status} onValueChange={(v) => setProjectForm({ ...projectForm, status: v as Project['status'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="planning">Planejamento</SelectItem><SelectItem value="active">Ativo</SelectItem><SelectItem value="on_hold">Pausado</SelectItem><SelectItem value="completed">Concluído</SelectItem><SelectItem value="cancelled">Cancelado</SelectItem></SelectContent></Select></FormField>
+                  <FormField label="Prioridade"><Select value={projectForm.priority} onValueChange={(v) => setProjectForm({ ...projectForm, priority: v as Project['priority'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="low">Baixa</SelectItem><SelectItem value="medium">Média</SelectItem><SelectItem value="high">Alta</SelectItem><SelectItem value="urgent">Urgente</SelectItem></SelectContent></Select></FormField>
+                  <FormField label="Categoria"><Select value={projectForm.category} onValueChange={(v) => setProjectForm({ ...projectForm, category: v as Project['category'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="clinical">Clínico</SelectItem><SelectItem value="research">Pesquisa</SelectItem><SelectItem value="education">Educação</SelectItem><SelectItem value="administrative">Administrativo</SelectItem><SelectItem value="other">Outro</SelectItem></SelectContent></Select></FormField>
+                  <FormField label="Prazo"><Input type="date" value={projectForm.due_date} onChange={(e) => setProjectForm({ ...projectForm, due_date: e.target.value })} /></FormField>
+                  <FormField label="Orçamento"><Input type="number" min="0" step="0.01" value={projectForm.budget} onChange={(e) => setProjectForm({ ...projectForm, budget: Number(e.target.value) })} /></FormField>
+                </div>
+              </div>
+              <DialogFooter><Button variant="outline" onClick={() => setShowProjectForm(false)}>Cancelar</Button><Button disabled={!projectForm.title.trim() || createProjectMutation.isPending || updateProjectMutation.isPending} onClick={createProject}>Salvar projeto</Button></DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={!!selectedTask && !showTaskForm} onOpenChange={(open) => !open && setSelectedTask(null)}>
+            <DialogContent><DialogHeader><DialogTitle>{selectedTask?.title}</DialogTitle></DialogHeader><p className="text-sm text-muted-foreground">{selectedTask?.description || 'Sem descrição.'}</p><div className="flex gap-2"><Badge>{selectedTask?.status}</Badge><Badge variant="outline">{selectedTask?.priority}</Badge></div><DialogFooter><Button variant="destructive" onClick={() => { if (selectedTask && window.confirm('Excluir esta tarefa?')) deleteTaskMutation.mutate(selectedTask.id, { onSuccess: () => setSelectedTask(null) }) }}><Trash2 className="mr-2 h-4 w-4" />Excluir</Button><Button onClick={() => selectedTask && openTaskForm(selectedTask)}><Edit className="mr-2 h-4 w-4" />Editar</Button></DialogFooter></DialogContent>
+          </Dialog>
+
+          <Dialog open={showTaskForm} onOpenChange={(open) => { setShowTaskForm(open); if (!open) setEditingTaskId(null) }}>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl"><DialogHeader><DialogTitle>{editingTaskId ? 'Editar tarefa' : 'Nova tarefa'}</DialogTitle></DialogHeader>
+              <div className="grid gap-4"><FormField label="Projeto *"><Select value={taskForm.project_id} onValueChange={(v) => setTaskForm({ ...taskForm, project_id: v })}><SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger><SelectContent>{(projects || []).map((project) => <SelectItem key={project.id} value={project.id}>{project.title}</SelectItem>)}</SelectContent></Select></FormField><FormField label="Título *"><Input value={taskForm.title} onChange={(e) => setTaskForm({ ...taskForm, title: e.target.value })} /></FormField><FormField label="Descrição"><Textarea value={taskForm.description} onChange={(e) => setTaskForm({ ...taskForm, description: e.target.value })} /></FormField><div className="grid gap-4 sm:grid-cols-2"><FormField label="Situação"><Select value={taskForm.status} onValueChange={(v) => setTaskForm({ ...taskForm, status: v as Task['status'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="todo">A fazer</SelectItem><SelectItem value="in_progress">Em andamento</SelectItem><SelectItem value="review">Revisão</SelectItem><SelectItem value="done">Concluída</SelectItem></SelectContent></Select></FormField><FormField label="Prioridade"><Select value={taskForm.priority} onValueChange={(v) => setTaskForm({ ...taskForm, priority: v as Task['priority'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="low">Baixa</SelectItem><SelectItem value="medium">Média</SelectItem><SelectItem value="high">Alta</SelectItem><SelectItem value="urgent">Urgente</SelectItem></SelectContent></Select></FormField><FormField label="Prazo"><Input type="date" value={taskForm.due_date} onChange={(e) => setTaskForm({ ...taskForm, due_date: e.target.value })} /></FormField><FormField label="Horas estimadas"><Input type="number" min="0" value={taskForm.estimated_hours} onChange={(e) => setTaskForm({ ...taskForm, estimated_hours: Number(e.target.value) })} /></FormField></div></div>
+              <DialogFooter><Button variant="outline" onClick={() => setShowTaskForm(false)}>Cancelar</Button><Button disabled={!taskForm.title.trim() || !taskForm.project_id || createTaskMutation.isPending || updateTaskMutation.isPending} onClick={createTask}>Salvar tarefa</Button></DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </DashboardLayout>
     </AuthGuard>
   )
+}
+
+function FormField({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className="space-y-2"><Label>{label}</Label>{children}</div>
 }

@@ -29,7 +29,10 @@ import {
   BookOpen,
   Target,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Edit,
+  Trash2,
+  Power
 } from 'lucide-react'
 
 import { 
@@ -40,12 +43,15 @@ import {
   TeamMember, 
   Mentorship, 
   ProgressNote, 
-  CompetencyEvaluation 
+  CompetencyEvaluation
 } from '@/hooks/use-team-data'
+import { useCreateTeamMemberMutation, useUpdateTeamMemberMutation, useDeactivateTeamMemberMutation, TeamMemberInput } from '@/hooks/use-team-data'
 
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { Loading } from '@/components/ui/loading'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 
 export default function TeamPage() {
   const { user } = useAuth()
@@ -54,12 +60,18 @@ export default function TeamPage() {
 
   const addProgressNoteMutation = useAddProgressNoteMutation()
   const upsertCompetencyMutation = useUpsertCompetencyMutation()
+  const createMemberMutation = useCreateTeamMemberMutation()
+  const updateMemberMutation = useUpdateTeamMemberMutation()
+  const deactivateMemberMutation = useDeactivateTeamMemberMutation()
 
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedMentorship, setSelectedMentorship] = useState<Mentorship | null>(null)
   const [showProgressForm, setShowProgressForm] = useState(false)
   const [showCompetencyModal, setShowCompetencyModal] = useState(false)
   const [selectedIntern, setSelectedIntern] = useState<TeamMember | null>(null)
+  const [showMemberForm, setShowMemberForm] = useState(false)
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
+  const [memberForm, setMemberForm] = useState<TeamMemberInput>({ full_name: '', email: '', role: 'professional', phone: '', crefito: '', specialty: '', university: '', is_active: true, temporary_password: '' })
 
   // Form states
   const [progressForm, setProgressForm] = useState({
@@ -77,6 +89,17 @@ export default function TeamPage() {
 
   const isLoading = isLoadingTeamMembers || isLoadingMentorships;
   const error = teamMembersError || mentorshipsError;
+
+  const openMemberForm = (member?: TeamMember) => {
+    setEditingMember(member || null)
+    setMemberForm(member ? { full_name: member.full_name, email: member.email, role: member.role, phone: member.phone || '', crefito: member.crefito || '', specialty: member.specialty || '', university: member.university || '', semester: member.semester, is_active: member.is_active } : { full_name: '', email: '', role: 'professional', phone: '', crefito: '', specialty: '', university: '', is_active: true, temporary_password: '' })
+    setShowMemberForm(true)
+  }
+
+  const saveMember = () => {
+    const mutation = editingMember ? updateMemberMutation : createMemberMutation
+    mutation.mutate({ ...(editingMember ? { id: editingMember.id } : {}), ...memberForm } as any, { onSuccess: () => { setShowMemberForm(false); setEditingMember(null) } })
+  }
 
   const handleAddProgressNote = async () => {
     if (!selectedMentorship || !progressForm.content) return
@@ -544,6 +567,8 @@ export default function TeamPage() {
     <AuthGuard>
       <DashboardLayout>
         <div className="flex-1 space-y-4 p-4 sm:p-6">
+          {isLoading && <Card><CardContent className="py-12 text-center text-muted-foreground">Carregando equipe...</CardContent></Card>}
+          {error && <Card className="border-destructive"><CardContent className="py-4 text-destructive">{error.message}</CardContent></Card>}
           {/* Header - Otimizado para mobile */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -552,16 +577,17 @@ export default function TeamPage() {
                 Gerencie mentores, estagiários e acompanhe o progresso
               </p>
             </div>
-            <Button className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto" onClick={() => openMemberForm()} disabled={user?.role !== 'admin'}>
               <Plus className="mr-2 h-4 w-4" />
-              Nova Mentoria
+              Novo Integrante
             </Button>
           </div>
 
           {/* Tabs - Otimizado para mobile */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5">
               <TabsTrigger value="overview" className="text-xs sm:text-sm">Visão Geral</TabsTrigger>
+              <TabsTrigger value="members" className="text-xs sm:text-sm">Integrantes</TabsTrigger>
               <TabsTrigger value="mentors" className="text-xs sm:text-sm">Mentores</TabsTrigger>
               <TabsTrigger value="interns" className="text-xs sm:text-sm">Estagiários</TabsTrigger>
               <TabsTrigger value="evaluations" className="text-xs sm:text-sm">Avaliações</TabsTrigger>
@@ -569,6 +595,19 @@ export default function TeamPage() {
 
             <TabsContent value="overview" className="mt-4">
               {selectedMentorship ? renderMentorshipDetails() : renderOverview()}
+            </TabsContent>
+
+            <TabsContent value="members" className="mt-4">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {(teamMembers || []).map((member) => (
+                  <Card key={member.id} className={!member.is_active ? 'opacity-70' : ''}>
+                    <CardHeader className="pb-3"><div className="flex items-start justify-between gap-3"><div><CardTitle className="text-lg">{member.full_name}</CardTitle><CardDescription>{member.email}</CardDescription></div><Badge variant={member.is_active ? 'secondary' : 'outline'}>{member.is_active ? 'Ativo' : 'Inativo'}</Badge></div></CardHeader>
+                    <CardContent className="space-y-3 text-sm"><p><strong>Função:</strong> {member.role}</p>{member.phone && <p><strong>Telefone:</strong> {member.phone}</p>}{member.specialty && <p><strong>Especialidade:</strong> {member.specialty}</p>}
+                      {user?.role === 'admin' && <div className="flex gap-2 border-t pt-3"><Button size="sm" variant="outline" onClick={() => openMemberForm(member)}><Edit className="mr-2 h-4 w-4" />Editar</Button>{member.is_active ? <Button size="sm" variant="destructive" disabled={deactivateMemberMutation.isPending || member.id === user.id} onClick={() => window.confirm(`Inativar ${member.full_name}?`) && deactivateMemberMutation.mutate(member.id)}><Trash2 className="mr-2 h-4 w-4" />Inativar</Button> : <Button size="sm" onClick={() => updateMemberMutation.mutate({ id: member.id, is_active: true })}><Power className="mr-2 h-4 w-4" />Reativar</Button>}</div>}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </TabsContent>
 
             <TabsContent value="mentors" className="mt-4">
@@ -678,8 +717,30 @@ export default function TeamPage() {
               </Card>
             </TabsContent>
           </Tabs>
+
+          <Dialog open={showMemberForm} onOpenChange={setShowMemberForm}>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+              <DialogHeader><DialogTitle>{editingMember ? 'Editar integrante' : 'Novo integrante'}</DialogTitle></DialogHeader>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <MemberField label="Nome completo *"><Input value={memberForm.full_name} onChange={(e) => setMemberForm({ ...memberForm, full_name: e.target.value })} /></MemberField>
+                <MemberField label="E-mail *"><Input type="email" value={memberForm.email} onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })} /></MemberField>
+                <MemberField label="Função"><Select value={memberForm.role} onValueChange={(role) => setMemberForm({ ...memberForm, role: role as TeamMember['role'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="admin">Administrador</SelectItem><SelectItem value="mentor">Mentor</SelectItem><SelectItem value="professional">Profissional</SelectItem><SelectItem value="therapist">Fisioterapeuta</SelectItem><SelectItem value="receptionist">Recepção</SelectItem><SelectItem value="intern">Estagiário</SelectItem><SelectItem value="student">Estudante</SelectItem></SelectContent></Select></MemberField>
+                <MemberField label="Telefone"><Input value={memberForm.phone || ''} onChange={(e) => setMemberForm({ ...memberForm, phone: e.target.value })} /></MemberField>
+                <MemberField label="CREFITO"><Input value={memberForm.crefito || ''} onChange={(e) => setMemberForm({ ...memberForm, crefito: e.target.value })} /></MemberField>
+                <MemberField label="Especialidade"><Input value={memberForm.specialty || ''} onChange={(e) => setMemberForm({ ...memberForm, specialty: e.target.value })} /></MemberField>
+                <MemberField label="Universidade"><Input value={memberForm.university || ''} onChange={(e) => setMemberForm({ ...memberForm, university: e.target.value })} /></MemberField>
+                <MemberField label="Semestre"><Input type="number" min="1" max="20" value={memberForm.semester || ''} onChange={(e) => setMemberForm({ ...memberForm, semester: e.target.value ? Number(e.target.value) : undefined })} /></MemberField>
+                {!editingMember && <MemberField label="Senha temporária *"><Input type="password" required minLength={8} value={memberForm.temporary_password || ''} onChange={(e) => setMemberForm({ ...memberForm, temporary_password: e.target.value })} /></MemberField>}
+              </div>
+              <DialogFooter><Button variant="outline" onClick={() => setShowMemberForm(false)}>Cancelar</Button><Button disabled={!memberForm.full_name.trim() || !memberForm.email.trim() || (!editingMember && (memberForm.temporary_password?.length || 0) < 8) || createMemberMutation.isPending || updateMemberMutation.isPending} onClick={saveMember}>Salvar integrante</Button></DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </DashboardLayout>
     </AuthGuard>
   )
+}
+
+function MemberField({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div className="space-y-2"><Label>{label}</Label>{children}</div>
 }

@@ -1,299 +1,49 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Users, Calendar, UserPlus, Activity, TrendingUp, Clock, AlertCircle, CheckCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Activity, Calendar, Clock, Plus, Trash2, UserPlus, Users } from 'lucide-react'
+import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { fetchJson } from '@/lib/api-client'
+import { toast } from 'sonner'
 
-interface AnalyticsSummary {
-  totalPatients: number;
-  appointmentsThisMonth: number;
-  newPatientsThisMonth: number;
-  appointmentStatusDistribution: { status: string; count: number }[];
-  // New metrics
-  attendanceRate?: number;
-  avgSessionDuration?: number;
-  teamProductivity?: { professional: string; sessions: number }[];
-  monthlyTrend?: { month: string; appointments: number; newPatients: number }[];
-}
-
-const fetchAnalyticsSummary = async (): Promise<AnalyticsSummary> => {
-  const response = await fetch('/api/analytics/summary');
-  if (!response.ok) {
-    throw new Error('Network response was not ok');
-  }
-  return response.json();
-};
-
-const StatCard = ({ 
-  title, 
-  value, 
-  icon: Icon, 
-  trend, 
-  trendValue 
-}: { 
-  title: string; 
-  value: string | number; 
-  icon: React.ElementType; 
-  trend?: 'up' | 'down' | 'stable';
-  trendValue?: string;
-}) => (
-  <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      <Icon className="h-4 w-4 text-muted-foreground" />
-    </CardHeader>
-    <CardContent>
-      <div className="text-2xl font-bold">{value}</div>
-      {trend && trendValue && (
-        <div className="flex items-center text-xs text-muted-foreground mt-1">
-          <TrendingUp className={`h-3 w-3 mr-1 ${
-            trend === 'up' ? 'text-green-500' : 
-            trend === 'down' ? 'text-red-500' : 
-            'text-gray-500'
-          }`} />
-          <span className={
-            trend === 'up' ? 'text-green-600' : 
-            trend === 'down' ? 'text-red-600' : 
-            'text-gray-600'
-          }>
-            {trendValue}
-          </span>
-        </div>
-      )}
-    </CardContent>
-  </Card>
-);
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
-
-const getStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
-    case 'completed': return 'bg-green-100 text-green-800';
-    case 'scheduled': return 'bg-blue-100 text-blue-800';
-    case 'cancelled': return 'bg-red-100 text-red-800';
-    case 'no_show': return 'bg-orange-100 text-orange-800';
-    default: return 'bg-gray-100 text-gray-800';
-  }
-};
-
-const getStatusIcon = (status: string) => {
-  switch (status.toLowerCase()) {
-    case 'completed': return CheckCircle;
-    case 'scheduled': return Clock;
-    case 'cancelled': return AlertCircle;
-    case 'no_show': return AlertCircle;
-    default: return Activity;
-  }
-};
+interface Summary { totalPatients: number; appointmentsThisMonth: number; previousAppointments: number; newPatientsThisMonth: number; previousNewPatients: number; attendanceRate: number; avgSessionDuration: number | null; appointmentStatusDistribution: { status: string; count: number }[]; monthlyTrend: { month: string; appointments: number; newPatients: number }[]; teamProductivity: { professional: string; role: string; sessions: number }[]; operationalMetrics: { avgSessionDuration: number | null; cancellationRate: number; sessionsPerProfessionalPerDay: number } }
+interface Report { id: string; title: string; analysis_type: 'operational' | 'clinical' | 'financial' | 'team' | 'custom'; status: 'draft' | 'final' | 'archived'; notes?: string; updated_at: string }
+const emptyReport = { title: '', analysis_type: 'operational' as Report['analysis_type'], status: 'draft' as Report['status'], notes: '' }
+const labels: Record<string, string> = { scheduled: 'Agendado', completed: 'Concluído', cancelled: 'Cancelado', no_show: 'Faltou', confirmed: 'Confirmado', pending: 'Pendente', in_progress: 'Em atendimento', rescheduled: 'Reagendado' }
+const delta = (current: number, previous: number) => previous ? `${current >= previous ? '+' : ''}${Math.round((current - previous) / previous * 100)}% vs. mês anterior` : 'Sem base no mês anterior'
 
 export default function AnalyticsDashboard() {
-  const { data, isLoading, error } = useQuery<AnalyticsSummary>({
-    queryKey: ['analyticsSummary'],
-    queryFn: fetchAnalyticsSummary,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-  });
+  const client = useQueryClient()
+  const { data, isLoading, error } = useQuery<Summary>({ queryKey: ['analyticsSummary'], queryFn: () => fetchJson('/api/analytics/summary'), staleTime: 60_000 })
+  const { data: reports = [] } = useQuery<Report[]>({ queryKey: ['analysisReports'], queryFn: () => fetchJson('/api/analytics/reports') })
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState<Report | null>(null)
+  const [form, setForm] = useState(emptyReport)
+  const saveReport = useMutation<Report, Error, typeof emptyReport>({ mutationFn: (input) => fetchJson(editing ? `/api/analytics/reports/${editing.id}` : '/api/analytics/reports', { method: editing ? 'PUT' : 'POST', body: JSON.stringify(input) }), onSuccess: () => { client.invalidateQueries({ queryKey: ['analysisReports'] }); setOpen(false); toast.success('Análise salva!') }, onError: (e) => toast.error(e.message) })
+  const deleteReport = useMutation({ mutationFn: (id: string) => fetchJson(`/api/analytics/reports/${id}`, { method: 'DELETE' }), onSuccess: () => { client.invalidateQueries({ queryKey: ['analysisReports'] }); toast.success('Análise excluída!') }, onError: (e: Error) => toast.error(e.message) })
+  const openReport = (report?: Report) => { setEditing(report || null); setForm(report ? { title: report.title, analysis_type: report.analysis_type, status: report.status, notes: report.notes || '' } : emptyReport); setOpen(true) }
+  if (isLoading) return <div className="flex h-64 items-center justify-center">Carregando análises...</div>
+  if (error || !data) return <div className="p-8 text-destructive">{error?.message || 'Não foi possível carregar os dados.'}</div>
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando painel...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-red-500">Erro ao carregar o painel: {(error as Error).message}</p>
-      </div>
-    );
-  }
-
-  // Calculate attendance rate
-  const attendanceRate = data?.appointmentStatusDistribution ? 
-    Math.round((data.appointmentStatusDistribution.find(s => s.status === 'completed')?.count || 0) / 
-    data.appointmentStatusDistribution.reduce((sum, s) => sum + s.count, 0) * 100) : 0;
-
-  return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Painel de Análises</h2>
-        <Badge variant="outline" className="text-sm">
-          Última atualização: {new Date().toLocaleTimeString('pt-BR')}
-        </Badge>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard 
-          title="Total de Pacientes" 
-          value={data?.totalPatients ?? 0} 
-          icon={Users}
-          trend="up"
-          trendValue="+12% vs mês anterior"
-        />
-        <StatCard 
-          title="Atendimentos no Mês" 
-          value={data?.appointmentsThisMonth ?? 0} 
-          icon={Calendar}
-          trend="up"
-          trendValue="+8% vs mês anterior"
-        />
-        <StatCard 
-          title="Novos Pacientes" 
-          value={data?.newPatientsThisMonth ?? 0} 
-          icon={UserPlus}
-          trend="stable"
-          trendValue="Estável"
-        />
-        <StatCard 
-          title="Taxa de Comparecimento" 
-          value={`${attendanceRate}%`} 
-          icon={Activity}
-          trend={attendanceRate > 80 ? "up" : attendanceRate > 60 ? "stable" : "down"}
-          trendValue={attendanceRate > 80 ? "Excelente" : attendanceRate > 60 ? "Bom" : "Precisa melhorar"}
-        />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        {/* Status Distribution Chart */}
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Situação dos Agendamentos</CardTitle>
-          </CardHeader>
-          <CardContent className="pl-2">
-            <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={data?.appointmentStatusDistribution}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  dataKey="status" 
-                  stroke="#888888" 
-                  fontSize={12} 
-                  tickLine={false} 
-                  axisLine={false}
-                  tickFormatter={(value) => {
-                    const statusMap: { [key: string]: string } = {
-                      'scheduled': 'Agendado',
-                      'completed': 'Concluído',
-                      'cancelled': 'Cancelado',
-                      'no_show': 'Faltou'
-                    };
-                    return statusMap[value] || value;
-                  }}
-                />
-                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  formatter={(value, name) => [value, 'Total']}
-                  labelFormatter={(label) => {
-                    const statusMap: { [key: string]: string } = {
-                      'scheduled': 'Agendado',
-                      'completed': 'Concluído',
-                      'cancelled': 'Cancelado',
-                      'no_show': 'Faltou'
-                    };
-                    return statusMap[label] || label;
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="count" fill="#1d4ed8" name="Agendamentos" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Status Summary Cards */}
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Resumo por situação</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {data?.appointmentStatusDistribution?.map((item, index) => {
-              const Icon = getStatusIcon(item.status);
-              return (
-                <div key={item.status} className="flex items-center justify-between p-3 rounded-lg border">
-                  <div className="flex items-center space-x-3">
-                    <Icon className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">
-                        {item.status === 'scheduled' ? 'Agendado' :
-                         item.status === 'completed' ? 'Concluído' :
-                         item.status === 'cancelled' ? 'Cancelado' :
-                         item.status === 'no_show' ? 'Faltou' : item.status}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {Math.round((item.count / (data?.appointmentStatusDistribution?.reduce((sum, s) => sum + s.count, 0) || 1)) * 100)}% do total
-                      </p>
-                    </div>
-                  </div>
-                  <Badge className={getStatusColor(item.status)}>
-                    {item.count}
-                  </Badge>
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Additional Analytics Section */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Métricas Operacionais</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Tempo médio por sessão</span>
-                <span className="font-medium">45 min</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Ocupação da agenda</span>
-                <span className="font-medium">78%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Taxa de cancelamento</span>
-                <span className="font-medium">12%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Sessões por profissional/dia</span>
-                <span className="font-medium">6.2</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Próximas Funcionalidades</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-sm">Análise preditiva de abandono</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm">Recomendações automáticas de IA</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <span className="text-sm">Relatórios de evolução do paciente</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <span className="text-sm">Painel de produtividade da equipe</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
+  return <div className="space-y-6 p-6">
+    <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center"><div><h2 className="text-3xl font-bold">Painel de Análises</h2><p className="text-muted-foreground">Indicadores calculados com os dados reais da clínica.</p></div><Button onClick={() => openReport()}><Plus className="mr-2 h-4 w-4" />Salvar análise</Button></div>
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"><Stat title="Total de pacientes" value={data.totalPatients} icon={Users} detail="Pacientes não arquivados" /><Stat title="Atendimentos no mês" value={data.appointmentsThisMonth} icon={Calendar} detail={delta(data.appointmentsThisMonth, data.previousAppointments)} /><Stat title="Novos pacientes" value={data.newPatientsThisMonth} icon={UserPlus} detail={delta(data.newPatientsThisMonth, data.previousNewPatients)} /><Stat title="Taxa de comparecimento" value={`${data.attendanceRate}%`} icon={Activity} detail="Eventos concluídos no histórico" /></div>
+    <div className="grid gap-4 lg:grid-cols-2"><Card><CardHeader><CardTitle>Situação dos atendimentos</CardTitle></CardHeader><CardContent><ResponsiveContainer width="100%" height={300}><BarChart data={data.appointmentStatusDistribution}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="status" tickFormatter={(v) => labels[v] || v} /><YAxis allowDecimals={false} /><Tooltip labelFormatter={(v) => labels[String(v)] || v} /><Bar dataKey="count" name="Atendimentos" fill="#2563eb" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></CardContent></Card><Card><CardHeader><CardTitle>Evolução em seis meses</CardTitle></CardHeader><CardContent><ResponsiveContainer width="100%" height={300}><LineChart data={data.monthlyTrend}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="month" /><YAxis allowDecimals={false} /><Tooltip /><Legend /><Line type="monotone" dataKey="appointments" name="Atendimentos" stroke="#2563eb" /><Line type="monotone" dataKey="newPatients" name="Novos pacientes" stroke="#059669" /></LineChart></ResponsiveContainer></CardContent></Card></div>
+    <div className="grid gap-4 md:grid-cols-3"><Stat title="Duração média" value={data.operationalMetrics.avgSessionDuration === null ? 'Sem dados' : `${data.operationalMetrics.avgSessionDuration} min`} icon={Clock} detail="Sessões concluídas no mês" /><Stat title="Cancelamentos" value={`${data.operationalMetrics.cancellationRate}%`} icon={Calendar} detail="Sobre atendimentos do mês" /><Stat title="Sessões por profissional/dia" value={data.operationalMetrics.sessionsPerProfessionalPerDay} icon={Users} detail="Média real de sessões concluídas" /></div>
+    <Card><CardHeader><CardTitle>Produção da equipe no mês</CardTitle></CardHeader><CardContent>{data.teamProductivity.length ? <div className="space-y-3">{data.teamProductivity.map((row) => <div key={row.professional} className="flex items-center justify-between border-b pb-3"><div><p className="font-medium">{row.professional}</p><p className="text-xs text-muted-foreground">{row.role}</p></div><Badge variant="secondary">{row.sessions} sessões</Badge></div>)}</div> : <p className="text-sm text-muted-foreground">Nenhuma sessão concluída no período.</p>}</CardContent></Card>
+    <Card><CardHeader><CardTitle>Análises salvas</CardTitle></CardHeader><CardContent>{reports.length ? <div className="grid gap-3 md:grid-cols-2">{reports.map((report) => <div key={report.id} role="button" tabIndex={0} onClick={() => openReport(report)} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') openReport(report) }} className="rounded-md border p-4 text-left hover:border-primary"><div className="flex items-start justify-between gap-2"><div><p className="font-medium">{report.title}</p><p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{report.notes || 'Sem observações.'}</p></div><Badge variant="outline">{report.status}</Badge></div><Button aria-label="Excluir análise" variant="ghost" size="sm" className="mt-2 text-destructive" onClick={(event) => { event.stopPropagation(); if (window.confirm('Excluir esta análise?')) deleteReport.mutate(report.id) }}><Trash2 className="h-4 w-4" /></Button></div>)}</div> : <p className="text-sm text-muted-foreground">Nenhuma análise salva.</p>}</CardContent></Card>
+    <Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>{editing ? 'Editar análise' : 'Nova análise'}</DialogTitle></DialogHeader><div className="space-y-4"><Field label="Título *"><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></Field><Field label="Tipo"><Select value={form.analysis_type} onValueChange={(v) => setForm({ ...form, analysis_type: v as Report['analysis_type'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="operational">Operacional</SelectItem><SelectItem value="clinical">Clínica</SelectItem><SelectItem value="financial">Financeira</SelectItem><SelectItem value="team">Equipe</SelectItem><SelectItem value="custom">Personalizada</SelectItem></SelectContent></Select></Field><Field label="Situação"><Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Report['status'] })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="draft">Rascunho</SelectItem><SelectItem value="final">Final</SelectItem><SelectItem value="archived">Arquivada</SelectItem></SelectContent></Select></Field><Field label="Observações"><Textarea rows={5} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></Field></div><DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button><Button disabled={!form.title.trim() || saveReport.isPending} onClick={() => saveReport.mutate(form)}>Salvar</Button></DialogFooter></DialogContent></Dialog>
+  </div>
 }
+
+function Stat({ title, value, icon: Icon, detail }: { title: string; value: string | number; icon: React.ElementType; detail: string }) { return <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm">{title}</CardTitle><Icon className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold">{value}</div><p className="mt-1 text-xs text-muted-foreground">{detail}</p></CardContent></Card> }
+function Field({ label, children }: { label: string; children: React.ReactNode }) { return <div className="space-y-2"><Label>{label}</Label>{children}</div> }

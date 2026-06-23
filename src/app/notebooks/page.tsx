@@ -27,7 +27,8 @@ import {
   X,
   ArrowLeft,
   User,
-  Calendar
+  Calendar,
+  Trash2
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Loading } from '@/components/ui/loading'
@@ -35,7 +36,7 @@ import RichEditor from '@/components/editor/rich-editor'
 import { TemplatesSelector, Template } from '@/components/editor/templates'
 import { CollaborationPanel } from '@/components/ui/collaboration-panel'
 import { useNotebooksQuery } from '@/hooks/use-notebooks-query'
-import { useCreateNotebookMutation, useUpdateNotebookMutation } from '@/hooks/use-notebook-mutations'
+import { useCreateNotebookMutation, useUpdateNotebookMutation, useDeleteNotebookMutation } from '@/hooks/use-notebook-mutations'
 // Interface Notebook será tipada pelo próprio hook
 
 export default function NotebooksPage() {
@@ -50,6 +51,7 @@ export default function NotebooksPage() {
   const { data: notebooks = [], isLoading, error } = useNotebooksQuery()
   const createNotebookMutation = useCreateNotebookMutation()
   const updateNotebookMutation = useUpdateNotebookMutation()
+  const deleteNotebookMutation = useDeleteNotebookMutation()
 
   const filteredNotebooks = notebooks.filter(notebook =>
     notebook.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -87,15 +89,21 @@ export default function NotebooksPage() {
       title: notebookTitle,
       description: notebookDescription,
       content: editorContent,
+      template_type: editingNotebook?.template_type || 'note',
+      is_public: editingNotebook?.is_public || false,
     }
 
     if (editingNotebook) {
-      updateNotebookMutation.mutate({ id: editingNotebook.id, ...notebookData })
+      updateNotebookMutation.mutate({ id: editingNotebook.id, ...notebookData }, { onSuccess: () => setShowEditor(false) })
     } else {
-      createNotebookMutation.mutate(notebookData)
+      createNotebookMutation.mutate(notebookData, { onSuccess: () => setShowEditor(false) })
     }
-    
-    setShowEditor(false)
+  }
+
+  const handleDeleteNotebook = (notebook: any) => {
+    if (window.confirm(`Excluir o caderno "${notebook.title}"? Esta ação não pode ser desfeita.`)) {
+      deleteNotebookMutation.mutate(notebook.id)
+    }
   }
 
   // Modo Editor
@@ -142,7 +150,7 @@ export default function NotebooksPage() {
                 <X className="h-4 w-4 mr-2" />
                 Cancelar
               </Button>
-              <Button onClick={handleSaveNotebook}>
+              <Button onClick={handleSaveNotebook} disabled={createNotebookMutation.isPending || updateNotebookMutation.isPending || !notebookTitle.trim()}>
                 <Save className="h-4 w-4 mr-2" />
                 Salvar Caderno
               </Button>
@@ -282,7 +290,7 @@ export default function NotebooksPage() {
                     </div>
 
                     <div className="flex gap-2 pt-2">
-                      <Button 
+                      <Button
                         variant="outline" 
                         size="sm" 
                         className="flex-1"
@@ -297,6 +305,16 @@ export default function NotebooksPage() {
                         onClick={() => handleEditNotebook(notebook)}
                       >
                         <BookOpen className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        title="Excluir caderno"
+                        disabled={deleteNotebookMutation.isPending}
+                        onClick={() => handleDeleteNotebook(notebook)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -324,4 +342,4 @@ export default function NotebooksPage() {
       </DashboardLayout>
     </AuthGuard>
   )
-} 
+}

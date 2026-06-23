@@ -15,6 +15,7 @@ export async function GET() {
         total_team_members: string
         active_interns: string
         active_mentorships: string
+        upcoming_events: string
       }>(
         `select
           (select count(*) from public.notebooks where clinic_id = $1)::text as total_notebooks,
@@ -23,7 +24,8 @@ export async function GET() {
           (select count(*) from public.tasks where status = 'done' and clinic_id = $1)::text as completed_tasks,
           (select count(*) from public.users where is_active = true and clinic_id = $1)::text as total_team_members,
           (select count(*) from public.users where role = 'intern' and is_active = true and clinic_id = $1)::text as active_interns,
-          (select count(*) from public.mentorships where status = 'active' and clinic_id = $1)::text as active_mentorships`,
+          (select count(*) from public.mentorships where status = 'active' and clinic_id = $1)::text as active_mentorships,
+          (select count(*) from public.calendar_events where start_time >= now() and clinic_id = $1)::text as upcoming_events`,
         [user.clinic_id]
       ),
       query(
@@ -37,7 +39,7 @@ export async function GET() {
         [user.clinic_id]
       ),
       query(
-        `select id, title, event_type as type, start_time::text as scheduled_for, participants
+        `select id, title, event_type as type, start_time::text as scheduled_for, attendees as participants
            from public.calendar_events
           where start_time >= now() and clinic_id = $1
           order by start_time asc
@@ -58,7 +60,7 @@ export async function GET() {
         completedTasks,
         totalTeamMembers: Number(row?.total_team_members ?? 0),
         activeInterns: Number(row?.active_interns ?? 0),
-        upcomingEvents: events.length,
+        upcomingEvents: Number(row?.upcoming_events ?? 0),
         activeMentorships: Number(row?.active_mentorships ?? 0),
         completionRate: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
       },

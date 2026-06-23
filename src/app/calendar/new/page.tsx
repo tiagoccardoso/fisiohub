@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/hooks/use-auth-fixed'
-import { supabase } from '@/lib/supabase/client'
+import { fetchJson } from '@/lib/api-client'
 import { toast } from 'sonner'
 import { ArrowLeft, Calendar, Save, Clock, MapPin, Info } from 'lucide-react'
 
@@ -30,9 +30,9 @@ const EVENT_TYPES = [
   { value: 'session', label: 'Sessão de Fisioterapia' },
   { value: 'evaluation', label: 'Avaliação' },
   { value: 'meeting', label: 'Reunião' },
-  { value: 'procedure', label: 'Procedimento' },
-  { value: 'follow_up', label: 'Acompanhamento' },
-  { value: 'other', label: 'Outro' }
+  { value: 'return', label: 'Retorno' },
+  { value: 'supervision', label: 'Supervisão' },
+  { value: 'break', label: 'Pausa' }
 ]
 
 export default function NewEvent() {
@@ -75,42 +75,16 @@ export default function NewEvent() {
     setIsLoading(true)
 
     try {
-      const { data, error } = await supabase
-        .from('calendar_events')
-        .insert({
+      await fetchJson('/api/calendar-events', { method: 'POST', body: JSON.stringify({
           title: formData.title,
           description: formData.description,
-          start_time: formData.start_time,
-          end_time: formData.end_time,
-          type: formData.type,
+          start_time: new Date(formData.start_time).toISOString(),
+          end_time: new Date(formData.end_time).toISOString(),
+          event_type: formData.type,
           status: 'scheduled',
-          created_by: user.id,
+          location: formData.location,
           attendees: formData.attendees.length > 0 ? formData.attendees : [user.id],
-          metadata: {
-            location: formData.location,
-            created_at: new Date().toISOString(),
-            event_source: 'manual'
-          }
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      // Log da atividade
-      await supabase
-        .from('activity_logs')
-        .insert({
-          user_id: user.id,
-          action: 'create',
-          entity_type: 'calendar_event',
-          entity_id: data.id,
-          details: {
-            title: formData.title,
-            type: formData.type,
-            start_time: formData.start_time
-          }
-        })
+        }) })
 
       toast.success('Evento criado com sucesso!')
       router.push('/calendar')

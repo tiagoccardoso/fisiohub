@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { DashboardLayout } from '@/components/layouts/dashboard-layout'
 import { AuthGuard } from '@/components/auth/auth-guard'
-import { SetupNotice } from '@/components/ui/setup-notice'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { EnhancedCard, EnhancedCardContent, EnhancedCardHeader, EnhancedCardTitle } from '@/components/ui/enhanced-card'
 import { Badge } from '@/components/ui/badge'
@@ -13,12 +12,8 @@ import { Button } from '@/components/ui/button'
 import { EnhancedButton } from '@/components/ui/enhanced-button'
 import { LoadingSpinner, SkeletonCard } from '@/components/ui/enhanced-loading'
 import { Progress } from '@/components/ui/progress'
-import { AnalyticsDashboard } from '@/components/ui/analytics-dashboard'
 import { ThemeCustomizer } from '@/components/ui/theme-customizer'
-import { DashboardWidgets, useDashboardWidgets } from '@/components/ui/dashboard-widgets'
 import { useAuth } from '@/hooks/use-auth-fixed' // CORREÇÃO: Usar o hook refatorado
-import { supabase } from '@/lib/supabase/client' // CORREÇÃO: Importar a instância do cliente
-import { isMockMode } from '@/lib/auth'
 import {
   BookOpen,
   Users,
@@ -78,7 +73,7 @@ interface RecentActivity {
 interface UpcomingEvent {
   id: string
   title: string
-  type: 'supervision' | 'appointment' | 'meeting' | 'evaluation'
+  type: 'supervision' | 'appointment' | 'meeting' | 'evaluation' | 'session' | 'return' | 'break' | 'blocked'
   scheduled_for: string
   participants?: string[]
 }
@@ -90,62 +85,6 @@ interface QuickAction {
   href: string
   color: string
 }
-
-// Mock data fallback
-const mockStats: DashboardStats = {
-  totalNotebooks: 24,
-  totalProjects: 8,
-  totalTasks: 156,
-  completedTasks: 89,
-  totalTeamMembers: 12,
-  activeInterns: 5,
-  upcomingEvents: 7,
-  completionRate: 78
-}
-
-const mockActivities: RecentActivity[] = [
-  {
-    id: '1',
-    action: 'create',
-    resource_type: 'notebook',
-    user_id: 'mock-user',
-    created_at: new Date().toISOString(),
-    user: { full_name: 'Dr. Profissional Responsável' }
-  },
-  {
-    id: '2',
-    action: 'update',
-    resource_type: 'project',
-    user_id: 'mock-user',
-    created_at: new Date(Date.now() - 3600000).toISOString(),
-    user: { full_name: 'Ana Silva' }
-  },
-  {
-    id: '3',
-    action: 'create',
-    resource_type: 'task',
-    user_id: 'mock-user',
-    created_at: new Date(Date.now() - 7200000).toISOString(),
-    user: { full_name: 'Ana Lima' }
-  }
-]
-
-const mockEvents: UpcomingEvent[] = [
-  {
-    id: '1',
-    title: 'Supervisão - Maria Silva',
-    type: 'supervision',
-    scheduled_for: new Date(Date.now() + 86400000).toISOString(),
-    participants: ['Dr. Profissional Responsável', 'Maria Silva']
-  },
-  {
-    id: '2',
-    title: 'Reunião de Equipe',
-    type: 'meeting',
-    scheduled_for: new Date(Date.now() + 172800000).toISOString(),
-    participants: ['Toda equipe']
-  }
-]
 
 const quickActions: QuickAction[] = [
   {
@@ -182,17 +121,8 @@ export default function Dashboard() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const { data, isLoading, error } = useDashboardQuery()
-  const [showAnalytics, setShowAnalytics] = useState(false)
   const [selectedView, setSelectedView] = useState('overview')
   const [currentTime, setCurrentTime] = useState(new Date())
-
-  // Advanced features hooks
-  const dashboardWidgets = useDashboardWidgets()
-  const [showAdvancedDashboard, setShowAdvancedDashboard] = useState(false)
-
-  const isUsingMock = isMockMode()
-
-
 
   const getActivityIcon = (resourceType: string) => {
     switch (resourceType) {
@@ -235,7 +165,11 @@ export default function Dashboard() {
       supervision: 'Supervisão',
       appointment: 'Consulta',
       meeting: 'Reunião',
-      evaluation: 'Avaliação'
+      evaluation: 'Avaliação',
+      session: 'Sessão',
+      return: 'Retorno',
+      break: 'Pausa',
+      blocked: 'Bloqueio'
     }
     return labels[type] || 'Evento'
   }
@@ -255,24 +189,6 @@ export default function Dashboard() {
     return 'Boa noite'
   }
 
-  if (showAnalytics) {
-    return (
-      <AuthGuard>
-        <DashboardLayout>
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-2xl font-bold">Painel de Análises</h1>
-              <Button onClick={() => setShowAnalytics(false)} variant="outline">
-                Voltar ao Painel
-              </Button>
-            </div>
-            <AnalyticsDashboard />
-          </div>
-        </DashboardLayout>
-      </AuthGuard>
-    )
-  }
-
   return (
     <AuthGuard>
       <DashboardLayout>
@@ -289,30 +205,9 @@ export default function Dashboard() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-              {/* Advanced Dashboard Toggle */}
-              <Button
-                onClick={() => setShowAdvancedDashboard(!showAdvancedDashboard)}
-                variant={showAdvancedDashboard ? "default" : "outline"}
-                size="sm"
-              >
-                <Grid3X3 className="h-4 w-4 mr-2" />
-                {showAdvancedDashboard ? 'Painel Padrão' : 'Painel Avançado'}
-              </Button>
-
-              {/* Analytics Dashboard */}
-              <Button
-                onClick={() => setShowAnalytics(!showAnalytics)}
-                variant="outline"
-                size="sm"
-              >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Análises
-              </Button>
+              <Button asChild variant="outline" size="sm"><Link href="/analytics"><BarChart3 className="h-4 w-4 mr-2" />Análises</Link></Button>
             </div>
           </div>
-
-          {/* Setup Notice */}
-          {isUsingMock && <SetupNotice />}
 
           {/* Error Message */}
           {error && (
@@ -326,20 +221,10 @@ export default function Dashboard() {
             </Card>
           )}
 
-          {/* Advanced Dashboard Widgets */}
-          {showAdvancedDashboard && (
-            <DashboardWidgets
-              isEditMode={false}
-              onToggleEditMode={() => {}}
-            />
-          )}
-
-          {/* Standard Dashboard */}
-          {!showAdvancedDashboard && (
-            <>
+          {/* Dashboard com dados do Neon */}
               {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {loading ? (
+                {isLoading ? (
                   <>
                     <SkeletonCard />
                     <SkeletonCard />
@@ -363,13 +248,13 @@ export default function Dashboard() {
 
                     <EnhancedCard variant="elevated" animation="fade" className="hover-lift border-primary/15 bg-white">
                       <EnhancedCardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <EnhancedCardTitle className="text-sm font-medium text-emerald-700">Projetos Ativos</EnhancedCardTitle>
+                        <EnhancedCardTitle className="text-sm font-medium text-emerald-700">Total de Projetos</EnhancedCardTitle>
                         <FolderKanban className="h-4 w-4 text-emerald-600 animate-float" />
                       </EnhancedCardHeader>
                       <EnhancedCardContent>
                         <div className="text-2xl font-bold text-emerald-800 animate-scale-in">{data?.stats.totalProjects}</div>
                         <p className="text-xs text-emerald-600">
-                          Em desenvolvimento
+                          Projetos cadastrados
                         </p>
                       </EnhancedCardContent>
                     </EnhancedCard>
@@ -464,6 +349,7 @@ export default function Dashboard() {
                           </div>
                         )
                       })}
+                      {!data?.activities.length && <p className="text-sm text-muted-foreground">Nenhuma atividade registrada.</p>}
                     </div>
                   </CardContent>
                 </Card>
@@ -499,14 +385,11 @@ export default function Dashboard() {
                           </div>
                         )
                       })}
+                      {!data?.events.length && <p className="text-sm text-muted-foreground">Nenhum evento futuro.</p>}
                     </div>
                   </CardContent>
                 </Card>
               </div>
-            </>
-          )}
-
-
         </div>
 
         {/* Advanced Features */}

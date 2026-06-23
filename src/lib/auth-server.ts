@@ -18,6 +18,7 @@ export type User = {
   is_active?: boolean
   created_at?: string
   updated_at?: string
+  preferences?: Record<string, string | number | boolean | null>
 }
 
 export async function getUser() {
@@ -41,6 +42,7 @@ export async function getUser() {
             u.is_active,
             u.created_at::text,
             u.updated_at::text
+            ,coalesce(u.metadata -> 'preferences', '{}'::jsonb) as preferences
        from public.users u
        join public.clinics c on c.id = u.clinic_id and c.is_active = true
       where u.id = $1

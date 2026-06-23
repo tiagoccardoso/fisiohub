@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { fetchJson } from '@/lib/api-client'
 
 export interface TeamMember {
   id: string
@@ -51,25 +52,41 @@ export interface ProgressNote {
   created_by: string
 }
 
-async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers || {}),
-    },
-  })
-  const payload = await response.json().catch(() => ({}))
-  if (!response.ok) throw new Error(payload?.error || 'Erro de comunicação com o servidor.')
-  return payload as T
-}
-
 export function useTeamMembersQuery() {
   return useQuery<TeamMember[], Error>({
     queryKey: ['teamMembers'],
     queryFn: () => fetchJson<TeamMember[]>('/api/team'),
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
+  })
+}
+
+export type TeamMemberInput = Pick<TeamMember, 'full_name' | 'email' | 'role'> & Partial<Pick<TeamMember, 'phone' | 'crefito' | 'specialty' | 'university' | 'semester' | 'is_active'>> & { temporary_password?: string }
+
+export function useCreateTeamMemberMutation() {
+  const client = useQueryClient()
+  return useMutation<TeamMember, Error, TeamMemberInput>({
+    mutationFn: (input) => fetchJson('/api/team', { method: 'POST', body: JSON.stringify(input) }),
+    onSuccess: () => { client.invalidateQueries({ queryKey: ['teamMembers'] }); client.invalidateQueries({ queryKey: ['dashboard-data'] }); toast.success('Integrante cadastrado!') },
+    onError: (error) => toast.error(error.message),
+  })
+}
+
+export function useUpdateTeamMemberMutation() {
+  const client = useQueryClient()
+  return useMutation<TeamMember, Error, Partial<TeamMemberInput> & { id: string }>({
+    mutationFn: ({ id, ...input }) => fetchJson(`/api/team/${id}`, { method: 'PUT', body: JSON.stringify(input) }),
+    onSuccess: () => { client.invalidateQueries({ queryKey: ['teamMembers'] }); client.invalidateQueries({ queryKey: ['dashboard-data'] }); toast.success('Integrante atualizado!') },
+    onError: (error) => toast.error(error.message),
+  })
+}
+
+export function useDeactivateTeamMemberMutation() {
+  const client = useQueryClient()
+  return useMutation<{ ok: true }, Error, string>({
+    mutationFn: (id) => fetchJson(`/api/team/${id}`, { method: 'DELETE' }),
+    onSuccess: () => { client.invalidateQueries({ queryKey: ['teamMembers'] }); client.invalidateQueries({ queryKey: ['dashboard-data'] }); toast.success('Integrante inativado!') },
+    onError: (error) => toast.error(error.message),
   })
 }
 

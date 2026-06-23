@@ -27,7 +27,7 @@ export interface RecentActivity {
 export interface UpcomingEvent {
   id: string
   title: string
-  type: 'supervision' | 'appointment' | 'meeting' | 'evaluation'
+  type: 'supervision' | 'appointment' | 'meeting' | 'evaluation' | 'session' | 'return' | 'break' | 'blocked'
   scheduled_for: string
   participants?: string[]
 }

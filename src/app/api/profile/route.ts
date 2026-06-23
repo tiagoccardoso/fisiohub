@@ -13,6 +13,8 @@ const ProfileSchema = z.object({
   specialty: z.string().trim().max(120).optional(),
   university: z.string().trim().max(160).optional(),
   semester: z.union([z.coerce.number().int().min(1).max(20), z.literal(''), z.null()]).optional(),
+  avatar_url: z.union([z.string().trim().url('Informe uma URL válida para a foto.'), z.literal('')]).optional(),
+  preferences: z.record(z.union([z.string(), z.number(), z.boolean(), z.null()])).optional(),
   currentPassword: z.string().optional(),
   newPassword: z.string().min(8, 'A nova senha deve ter no minimo 8 caracteres.').optional(),
   passwordConfirmation: z.string().optional(),
@@ -69,10 +71,12 @@ export async function PATCH(request: Request) {
          university = nullif($8, ''),
          semester = nullif($9, '')::integer,
          password_hash = coalesce($10, password_hash),
+         avatar_url = nullif($11, ''),
+         metadata = coalesce(metadata, '{}'::jsonb) || $12::jsonb,
          updated_at = now()
        where id = $1 and clinic_id = $2
        returning id, clinic_id, email, full_name, role::text as role`,
-      [sessionUser.id, sessionUser.clinic_id, data.full_name, data.email.toLowerCase(), data.phone ?? '', data.crefito ?? '', data.specialty ?? '', data.university ?? '', data.semester?.toString() ?? '', passwordHash]
+      [sessionUser.id, sessionUser.clinic_id, data.full_name, data.email.toLowerCase(), data.phone ?? '', data.crefito ?? '', data.specialty ?? '', data.university ?? '', data.semester?.toString() ?? '', passwordHash, data.avatar_url ?? '', JSON.stringify({ preferences: data.preferences || {} })]
     )
     if (!user) return NextResponse.json({ error: 'Usuario nao encontrado.' }, { status: 404 })
 

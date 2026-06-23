@@ -27,8 +27,10 @@ import {
   useCommentsQuery, 
   useAddCommentMutation, 
   useVersionsQuery, 
-  useRestoreVersionMutation, 
-  useActiveUsersSubscription, 
+  useRestoreVersionMutation,
+  useActiveUsersSubscription,
+  useUpdateCommentMutation,
+  useDeleteCommentMutation,
   Comment, 
   Version 
 } from '@/hooks/use-collaboration-data'
@@ -52,6 +54,8 @@ export function CollaborationPanel({ documentId, documentTitle }: CollaborationP
 
   const addCommentMutation = useAddCommentMutation()
   const restoreVersionMutation = useRestoreVersionMutation()
+  const updateCommentMutation = useUpdateCommentMutation()
+  const deleteCommentMutation = useDeleteCommentMutation()
 
   const isLoading = isLoadingComments || isLoadingVersions || isLoadingActiveUsers;
   const error = commentsError || versionsError; // Combine errors for display
@@ -76,7 +80,7 @@ export function CollaborationPanel({ documentId, documentTitle }: CollaborationP
     addCommentMutation.mutate({
       document_id: documentId,
       content: replyContent,
-      // parent_id: parentId, // Removido para evitar erro de tipagem
+      parent_id: parentId,
     }, {
       onSuccess: () => {
         setReplyContent('')
@@ -93,10 +97,21 @@ export function CollaborationPanel({ documentId, documentTitle }: CollaborationP
     restoreVersionMutation.mutate({ versionId, documentId })
   }
 
-  // Placeholder for togglePin - needs backend implementation
-  const togglePin = (commentId: string) => {
-    toast.info('Funcionalidade de fixar comentário ainda não implementada no backend.')
-    // You would typically have a mutation here to update the comment's is_pinned status in the database
+  const togglePin = (comment: Comment) => {
+    updateCommentMutation.mutate({ id: comment.id, document_id: documentId, is_pinned: !comment.is_pinned })
+  }
+
+  const editComment = (comment: Comment) => {
+    const content = window.prompt('Editar comentário', comment.content)
+    if (content?.trim() && content.trim() !== comment.content) {
+      updateCommentMutation.mutate({ id: comment.id, document_id: documentId, content: content.trim() })
+    }
+  }
+
+  const deleteComment = (comment: Comment) => {
+    if (window.confirm('Excluir este comentário?')) {
+      deleteCommentMutation.mutate({ id: comment.id, document_id: documentId })
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -222,14 +237,11 @@ export function CollaborationPanel({ documentId, documentTitle }: CollaborationP
                               <Pin className="h-3 w-3 text-yellow-600" />
                             )}
                           </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => togglePin(comment.id)}
-                            className="h-6 w-6 p-0"
-                          >
-                            <MoreHorizontal className="h-3 w-3" />
-                          </Button>
+                          <div className="flex items-center">
+                            <Button title={comment.is_pinned ? 'Desafixar' : 'Fixar'} variant="ghost" size="sm" onClick={() => togglePin(comment)} className="h-7 w-7 p-0"><Pin className="h-3 w-3" /></Button>
+                            <Button title="Editar" variant="ghost" size="sm" onClick={() => editComment(comment)} className="h-7 w-7 p-0"><Edit className="h-3 w-3" /></Button>
+                            <Button title="Excluir" variant="ghost" size="sm" onClick={() => deleteComment(comment)} className="h-7 w-7 p-0 text-destructive"><Trash2 className="h-3 w-3" /></Button>
+                          </div>
                         </div>
                         
                         {comment.selection_text && (

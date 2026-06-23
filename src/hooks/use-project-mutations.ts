@@ -1,269 +1,38 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase/client'; // CORREÇÃO
-import { toast } from 'sonner';
-import { Project, Task, TeamMember } from './use-projects-data'; // Importar tipos
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import { fetchJson } from '@/lib/api-client'
+import type { Project, Task } from './use-projects-data'
 
-interface CreateProjectInput {
-  title: string;
-  description?: string;
-  status: Project['status'];
-  priority: Project['priority'];
-  due_date?: string;
-  budget?: number;
-  category: Project['category'];
-  tags?: string[];
+type ProjectInput = Pick<Project, 'title' | 'status' | 'priority' | 'category'> & Partial<Pick<Project, 'description' | 'due_date' | 'start_date' | 'budget' | 'tags' | 'progress'>>
+type TaskInput = Pick<Task, 'title' | 'status' | 'priority'> & Partial<Pick<Task, 'project_id' | 'description' | 'assigned_to' | 'due_date' | 'estimated_hours' | 'actual_hours' | 'order_index' | 'checklist' | 'attachments'>>
+
+function useRefresh() {
+  const client = useQueryClient()
+  return () => {
+    for (const key of ['projects', 'projectStats', 'tasks', 'dashboard-data']) client.invalidateQueries({ queryKey: [key] })
+  }
 }
-
-interface UpdateProjectInput {
-  id: string;
-  title?: string;
-  description?: string;
-  status?: Project['status'];
-  priority?: Project['priority'];
-  due_date?: string;
-  budget?: number;
-  category?: Project['category'];
-  tags?: string[];
-  progress?: number;
-}
-
 export function useCreateProjectMutation() {
-  const queryClient = useQueryClient();
-  // REMOVED: createClient call
-
-  return useMutation<Project, Error, CreateProjectInput>({
-    mutationFn: async (newProjectData) => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Mock mode fallback
-      if (false) {
-        const mockProject: Project = {
-          ...newProjectData,
-          id: Date.now().toString(),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          progress: 0,
-          created_by: user.id,
-          owner: { id: user.id, full_name: user.email || 'Mock User', email: user.email || 'mock@example.com', role: 'admin' }, // Mock owner
-        };
-        return mockProject;
-      }
-
-      const { data: insertData, error } = await supabase
-        .from('projects')
-        .insert({
-          ...newProjectData,
-          created_by: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return insertData as Project;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['project-stats'] });
-      toast.success('Projeto criado com sucesso!');
-    },
-    onError: (error) => {
-      toast.error('Erro ao criar projeto: ' + error.message);
-    },
-  });
+  const refresh = useRefresh()
+  return useMutation<Project, Error, ProjectInput>({ mutationFn: (input) => fetchJson('/api/projects', { method: 'POST', body: JSON.stringify(input) }), onSuccess: () => { refresh(); toast.success('Projeto criado com sucesso!') }, onError: (e) => toast.error(e.message) })
 }
-
 export function useUpdateProjectMutation() {
-  const queryClient = useQueryClient();
-  // REMOVED: createClient call
-
-  return useMutation<Project, Error, UpdateProjectInput>({
-    mutationFn: async (updatedProjectData) => {
-      const { id, ...dataToUpdate } = updatedProjectData;
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Mock mode fallback
-      if (false) {
-        const mockProject: Project = {
-          id: id,
-          title: dataToUpdate.title || 'Mock Project',
-          description: dataToUpdate.description || undefined,
-          status: dataToUpdate.status || 'active',
-          priority: dataToUpdate.priority || 'medium',
-          due_date: dataToUpdate.due_date || undefined,
-          progress: dataToUpdate.progress || 0,
-          budget: dataToUpdate.budget || undefined,
-          category: dataToUpdate.category || 'clinical',
-          created_by: user.id,
-          created_at: new Date().toISOString(), // Manter o original em um cenário real
-          updated_at: new Date().toISOString(),
-          owner: { id: user.id, full_name: user.email || 'Mock User', email: user.email || 'mock@example.com', role: 'admin' }, // Mock owner
-        };
-        return mockProject;
-      }
-
-      const { data: updateData, error } = await supabase
-        .from('projects')
-        .update(dataToUpdate)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return updateData as Project;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['project-stats'] });
-      toast.success('Projeto atualizado com sucesso!');
-    },
-    onError: (error) => {
-      toast.error('Erro ao atualizar projeto: ' + error.message);
-    },
-  });
+  const refresh = useRefresh()
+  return useMutation<Project, Error, Partial<ProjectInput> & { id: string }>({ mutationFn: ({ id, ...input }) => fetchJson(`/api/projects/${id}`, { method: 'PUT', body: JSON.stringify(input) }), onSuccess: () => { refresh(); toast.success('Projeto atualizado!') }, onError: (e) => toast.error(e.message) })
 }
-
-interface CreateTaskInput {
-  project_id: string;
-  title: string;
-  description?: string;
-  status: Task['status'];
-  priority: Task['priority'];
-  assigned_to?: string;
-  due_date?: string;
-  estimated_hours?: number;
-  checklist?: { id: string; text: string; completed: boolean }[];
-  attachments?: { id: string; name: string; url: string; type: string; size: number }[];
+export function useDeleteProjectMutation() {
+  const refresh = useRefresh()
+  return useMutation<{ ok: true }, Error, string>({ mutationFn: (id) => fetchJson(`/api/projects/${id}`, { method: 'DELETE' }), onSuccess: () => { refresh(); toast.success('Projeto excluído!') }, onError: (e) => toast.error(e.message) })
 }
-
-interface UpdateTaskInput {
-  id: string;
-  project_id?: string;
-  title?: string;
-  description?: string;
-  status?: Task['status'];
-  priority?: Task['priority'];
-  assigned_to?: string;
-  due_date?: string;
-  estimated_hours?: number;
-  actual_hours?: number;
-  order_index?: number;
-  checklist?: { id: string; text: string; completed: boolean }[];
-  attachments?: { id: string; name: string; url: string; type: string; size: number }[];
-}
-
 export function useCreateTaskMutation() {
-  const queryClient = useQueryClient();
-  // REMOVED: createClient call
-
-  return useMutation<Task, Error, CreateTaskInput>({
-    mutationFn: async (newTaskData) => {
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Mock mode fallback
-      if (false) {
-        const mockTask: Task = {
-          ...newTaskData,
-          id: Date.now().toString(),
-          actual_hours: 0,
-          order_index: 0, // Mock default
-          created_by: user.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-        return mockTask;
-      }
-
-      const { data: insertData, error } = await supabase
-        .from('tasks')
-        .insert({
-          ...newTaskData,
-          created_by: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return insertData as Task;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['projects'] }); // Para atualizar o progresso do projeto
-      queryClient.invalidateQueries({ queryKey: ['project-stats'] });
-      toast.success('Tarefa criada com sucesso!');
-    },
-    onError: (error) => {
-      toast.error('Erro ao criar tarefa: ' + error.message);
-    },
-  });
+  const refresh = useRefresh()
+  return useMutation<Task, Error, TaskInput>({ mutationFn: (input) => fetchJson('/api/tasks', { method: 'POST', body: JSON.stringify(input) }), onSuccess: () => { refresh(); toast.success('Tarefa criada!') }, onError: (e) => toast.error(e.message) })
 }
-
 export function useUpdateTaskMutation() {
-  const queryClient = useQueryClient();
-  // REMOVED: createClient call
-
-  return useMutation<Task, Error, UpdateTaskInput>({
-    mutationFn: async (updatedTaskData) => {
-      const { id, ...dataToUpdate } = updatedTaskData;
-      const { data } = await supabase.auth.getSession();
-      const user = data.session?.user;
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Mock mode fallback
-      if (false) {
-        const mockTask: Task = {
-          id: id,
-          title: dataToUpdate.title || 'Mock Task',
-          description: dataToUpdate.description || undefined,
-          status: dataToUpdate.status || 'todo',
-          priority: dataToUpdate.priority || 'medium',
-          assigned_to: dataToUpdate.assigned_to || undefined,
-          due_date: dataToUpdate.due_date || undefined,
-          estimated_hours: dataToUpdate.estimated_hours || undefined,
-          actual_hours: dataToUpdate.actual_hours || 0,
-          order_index: dataToUpdate.order_index || 0,
-          project_id: dataToUpdate.project_id || 'mock-project-id',
-          created_by: user.id,
-          created_at: new Date().toISOString(), // Manter o original em um cenário real
-          updated_at: new Date().toISOString(),
-        };
-        return mockTask;
-      }
-
-      const { data: updateData, error } = await supabase
-        .from('tasks')
-        .update({
-          ...dataToUpdate,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      return updateData as Task;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['projects'] }); // Para atualizar o progresso do projeto
-      queryClient.invalidateQueries({ queryKey: ['project-stats'] });
-      toast.success('Tarefa atualizada com sucesso!');
-    },
-    onError: (error) => {
-      toast.error('Erro ao atualizar tarefa: ' + error.message);
-    },
-  });
+  const refresh = useRefresh()
+  return useMutation<Task, Error, Partial<TaskInput> & { id: string }>({ mutationFn: (input) => fetchJson('/api/tasks', { method: 'PUT', body: JSON.stringify(input) }), onSuccess: () => { refresh(); toast.success('Tarefa atualizada!') }, onError: (e) => toast.error(e.message) })
+}
+export function useDeleteTaskMutation() {
+  const refresh = useRefresh()
+  return useMutation<{ ok: true }, Error, string>({ mutationFn: (id) => fetchJson(`/api/tasks?id=${id}`, { method: 'DELETE' }), onSuccess: () => { refresh(); toast.success('Tarefa excluída!') }, onError: (e) => toast.error(e.message) })
 }
