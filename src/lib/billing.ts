@@ -82,28 +82,28 @@ export const BILLING_PLANS: Record<BillingPlan, {
   name: string
   commercialPrice: string
   description: string
-  priceEnv: 'STRIPE_PRICE_MONTHLY' | 'STRIPE_PRICE_YEARLY'
+  priceEnv: 'STRIPE_PRICE_ID_MONTHLY' | 'STRIPE_PRICE_ID_ANNUAL'
 }> = {
   trial: {
     id: 'trial',
     name: 'Teste grátis por 7 dias',
     commercialPrice: 'R$ 0,00 por 7 dias',
     description: 'Acesso completo por 7 dias. Ao final do teste, a assinatura segue automaticamente no plano mensal.',
-    priceEnv: 'STRIPE_PRICE_MONTHLY',
+    priceEnv: 'STRIPE_PRICE_ID_MONTHLY',
   },
   monthly: {
     id: 'monthly',
     name: 'Plano Mensal',
     commercialPrice: 'R$ 79,90/mês',
     description: 'Flexibilidade para começar com todos os recursos da plataforma.',
-    priceEnv: 'STRIPE_PRICE_MONTHLY',
+    priceEnv: 'STRIPE_PRICE_ID_MONTHLY',
   },
   yearly: {
     id: 'yearly',
     name: 'Plano Anual',
     commercialPrice: 'R$ 59,90/mês',
     description: 'Equivale a R$ 718,80 por ano e gera economia de R$ 240,00 ao ano.',
-    priceEnv: 'STRIPE_PRICE_YEARLY',
+    priceEnv: 'STRIPE_PRICE_ID_ANNUAL',
   },
 }
 
@@ -345,8 +345,8 @@ export function resolvePlanFromPrice(priceId?: string | null, metadataPlan?: unk
   if (metadataPlan === 'trial' || metadataPlan === 'monthly' || metadataPlan === 'yearly') {
     return metadataPlan
   }
-  if (priceId && process.env.STRIPE_PRICE_MONTHLY && priceId === process.env.STRIPE_PRICE_MONTHLY) return 'monthly'
-  if (priceId && process.env.STRIPE_PRICE_YEARLY && priceId === process.env.STRIPE_PRICE_YEARLY) return 'yearly'
+  if (priceId && process.env.STRIPE_PRICE_ID_MONTHLY && priceId === process.env.STRIPE_PRICE_ID_MONTHLY) return 'monthly'
+  if (priceId && process.env.STRIPE_PRICE_ID_ANNUAL && priceId === process.env.STRIPE_PRICE_ID_ANNUAL) return 'yearly'
   return 'unknown'
 }
 
