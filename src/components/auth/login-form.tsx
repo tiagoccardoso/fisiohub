@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Heart, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { Heart, Mail, Lock, Eye, EyeOff, CheckCircle2, Sparkles, ShieldCheck, CalendarDays } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface LoginFormProps {
@@ -143,8 +143,59 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background px-4 py-10 sm:px-6">
-      <Card className="w-full max-w-md border-border/80 px-1 py-3 shadow-clinical-lg sm:px-5 sm:py-6">
+    <div className="min-h-dvh bg-background px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-8 lg:min-h-[calc(100dvh-4rem)] lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="space-y-6 rounded-3xl border border-primary/10 bg-gradient-to-br from-primary/10 via-white to-emerald-50 p-6 shadow-clinical-lg sm:p-8">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-primary shadow-sm">
+            <Sparkles className="h-4 w-4" />
+            FisioHub para clínicas de fisioterapia
+          </div>
+
+          <div className="space-y-4">
+            <h2 className="font-display text-3xl font-bold leading-tight text-primary sm:text-4xl">
+              Gestão completa, inteligente e organizada para sua clínica
+            </h2>
+            <p className="max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+              Organize pacientes, acompanhe atendimentos, controle informações clínicas e aproveite recursos inteligentes da plataforma em um único sistema. Todos os planos liberam acesso completo às funcionalidades.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              'Gestão completa da clínica',
+              'Organização de pacientes',
+              'Acompanhamento de atendimentos',
+              'Controle de informações clínicas',
+              'Recursos inteligentes da plataforma',
+              'Acesso completo em todos os planos',
+            ].map((item) => (
+              <div key={item} className="flex items-center gap-2 rounded-2xl bg-white/85 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                {item}
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-primary/10 bg-white p-4">
+              <ShieldCheck className="mb-3 h-5 w-5 text-primary" />
+              <p className="text-sm font-semibold text-foreground">Teste grátis</p>
+              <p className="mt-1 text-sm text-muted-foreground">7 dias com acesso completo.</p>
+            </div>
+            <div className="rounded-2xl border border-primary/10 bg-white p-4">
+              <CalendarDays className="mb-3 h-5 w-5 text-primary" />
+              <p className="text-sm font-semibold text-foreground">Mensal</p>
+              <p className="mt-1 text-sm text-muted-foreground">R$ 79,90 por mês.</p>
+            </div>
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
+              <Sparkles className="mb-3 h-5 w-5 text-emerald-700" />
+              <p className="text-sm font-semibold text-emerald-900">Anual</p>
+              <p className="mt-1 text-sm text-emerald-800">R$ 59,90/mês e economia de R$ 240,00 ao ano.</p>
+            </div>
+          </div>
+        </section>
+
+        <Card className="w-full border-border/80 px-1 py-3 shadow-clinical-lg sm:px-5 sm:py-6">
         <CardHeader className="space-y-5 text-center">
           <div className="flex flex-col items-center justify-center gap-3">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
@@ -338,7 +389,8 @@ export function LoginForm({ initialErrorCode, initialMode = 'login' }: LoginForm
             </p>
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 }

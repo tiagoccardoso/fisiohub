@@ -21,6 +21,7 @@ import {
   MessageSquare,
   ClipboardList,
   LayoutGrid,
+  CreditCard,
   type LucideIcon
 } from 'lucide-react'
 
@@ -85,6 +86,12 @@ const navigationItems = [
     label: 'Tarefas',
     icon: LayoutGrid,
     badge: null
+  },
+  {
+    href: '/assinatura',
+    label: 'Assinatura',
+    icon: CreditCard,
+    badge: null
   }
 ] as const satisfies readonly NavigationItem[]
 
@@ -111,7 +118,7 @@ const mobileNavigationItems: NavigationItem[] = [
   { href: '/calendar', label: 'Agenda', icon: Calendar, badge: null },
   { href: '/notebooks', label: 'Cadernos', icon: BookOpen, badge: null },
   { href: '/exercises', label: 'Exercicios', icon: Activity, badge: null },
-  { href: '/support', label: 'Suporte', icon: MessageSquare, badge: null },
+  { href: '/assinatura', label: 'Assinatura', icon: CreditCard, badge: null },
 ]
 
 export function Sidebar() {

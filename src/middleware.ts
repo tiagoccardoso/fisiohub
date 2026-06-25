@@ -66,19 +66,49 @@ async function readSession(req: NextRequest) {
   }
 }
 
+function isPublicPath(pathname: string) {
+  const publicRoutes = [
+    '/api/auth',
+    '/api/billing',
+    '/api/stripe/checkout',
+    '/api/stripe/portal',
+    '/api/stripe/subscription/migrate',
+    '/api/stripe/webhook',
+    '/api/health',
+    '/auth/login',
+    '/auth/signup',
+    '/auth/callback',
+    '/public',
+    '/robots.txt',
+    '/sitemap.xml',
+  ]
+
+  return publicRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`))
+}
+
+function isSubscriptionPath(pathname: string) {
+  return pathname === '/assinatura' || pathname.startsWith('/assinatura/')
+}
+
+async function hasSubscriptionAccess(request: NextRequest) {
+  try {
+    const accessUrl = new URL('/api/billing/access', request.url)
+    const response = await fetch(accessUrl, {
+      headers: {
+        cookie: request.headers.get('cookie') ?? '',
+      },
+      cache: 'no-store',
+    })
+    return response.ok
+  } catch {
+    return false
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
-  const publicAuthRoutes = [
-    '/api/auth/login',
-    '/api/auth/logout',
-    '/api/auth/session',
-    '/api/auth/signup',
-    '/auth/login',
-  ]
-  const isPublicAuthRoute = publicAuthRoutes.some((route) => pathname.startsWith(route))
-
-  if (isPublicAuthRoute) {
+  if (isPublicPath(pathname)) {
     if (pathname === '/auth/login' && await readSession(request)) {
       return NextResponse.redirect(new URL('/', request.url))
     }
@@ -87,12 +117,26 @@ export async function middleware(request: NextRequest) {
 
   const session = await readSession(request)
   if (!session) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Não autorizado.' }, { status: 401 })
+    }
     return NextResponse.redirect(new URL('/auth/login', request.url))
+  }
+
+  if (isSubscriptionPath(pathname)) {
+    return NextResponse.next()
+  }
+
+  if (!await hasSubscriptionAccess(request)) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Assinatura ativa ou trial ativo é obrigatório para acessar este recurso.' }, { status: 402 })
+    }
+    return NextResponse.redirect(new URL('/assinatura?reason=subscription_required', request.url))
   }
 
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|manifest.json|manifest.webmanifest|sw.js|icons|.*\\.png$|.*\\.jpg$|.*\\.svg$|.*\\.ico$).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|manifest.json|manifest.webmanifest|sw.js|icons|.*\\.png$|.*\\.jpg$|.*\\.svg$|.*\\.ico$).*)'],
 }
