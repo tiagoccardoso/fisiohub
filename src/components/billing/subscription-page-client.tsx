@@ -78,8 +78,8 @@ export function SubscriptionPageClient() {
   const [loadingAction, setLoadingAction] = useState<Action | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const checkoutStatus = searchParams.get('checkout')
-  const blockReason = searchParams.get('reason')
+  const checkoutStatus = searchParams?.get('checkout') ?? null
+  const blockReason = searchParams?.get('reason') ?? null
 
   useEffect(() => {
     let isMounted = true
